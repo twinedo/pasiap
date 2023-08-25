@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "535260780825",
+    "project_id": "pasiap",
+    "storage_bucket": "pasiap.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:535260780825:android:66d072569419ebe9850d88",
+        "android_client_info": {
+          "package_name": "com.paluta_sigap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "535260780825-lj8svptp8ns86kmo87e67e21nhr0tovq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABCwnHeqjaw59vojl0zQR6WZGKHc07UHk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "535260780825-lj8svptp8ns86kmo87e67e21nhr0tovq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
