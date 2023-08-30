@@ -6,13 +6,14 @@ import {
   Image,
   Pressable,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {BaseContainer, Button, Spacer, Toolbar} from 'components';
 import {BLACK, GREY1, GREY2, PRIMARY, WHITE} from 'styles/colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import globalStyles from 'styles/globalStyles';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RoutesParam} from 'routes/types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -22,18 +23,16 @@ import * as ImagePicker from 'react-native-image-picker';
 import {percentageWidth} from 'utils/screen_size';
 import userStore from 'store/userStore';
 import Geolocation from '@react-native-community/geolocation';
-import axios from 'axios';
-import {API_MAIN} from '@env';
-import authStore from 'store/authStore';
-import {FileSystem} from 'react-native-file-access';
+import {PostReport} from 'services/handler';
 
 const SOSPublic = () => {
   const navigation =
     useNavigation<StackNavigationProp<RoutesParam, 'SOSPublic'>>();
   const actionSheetRef = useRef<ActionSheetRef>(null);
   const [images, setImages] = useState<ImagePicker.Asset[]>([]);
-  const {loginData} = authStore();
   const {userData} = userStore();
+  const route = useRoute<RouteProp<RoutesParam, 'SOSPublic'>>();
+  const {data} = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [description, setDescription] = useState('');
   const [coords, setCoords] = useState({
@@ -74,58 +73,38 @@ const SOSPublic = () => {
     });
   };
 
-  const _onReport = async () => {
+  const _onReport = () => {
     setIsLoading(true);
-    const statFile = await FileSystem.stat(images[0].uri);
-    console.log('statFile', statFile);
-    console.log('images', images[0]);
 
-    const formData = new FormData();
-    formData.append('cat_id', 2);
-    formData.append('reported_by', 3);
-    formData.append('lat', 12345);
-    formData.append('long', 54321);
-    formData.append('description', description);
-    formData.append('status', 1);
-    // formData.append('photo', statFile.path);
-    // formData.append('photo', {
-    //   uri: images[0].uri,
-    //   name: images[0].fileName,
-    //   type: images[0].type,
-    //   mimes: images[0].type,
-    // });
-    formData.append('photo', {
-      // photo: '@' + images[0].fileName,
-      uri: images[0].uri,
-      name: images[0].fileName,
-      type: images[0].type,
-      // type: statFile.type,
-      // mimes: images[0].type,
-    });
-
-    console.log('uri', images[0].uri);
-    console.log('type', images[0].type);
-    console.log('fileName', images[0].fileName);
-
-    try {
-      const response = await axios.post(`${API_MAIN}/reports`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Accept: 'application/json',
-          Authorization: `Bearer ${loginData?.token}`,
-        },
-      });
-      console.log('res upload', response);
-    } catch (error) {
-      console.error(error);
-      console.error('API Error:', error);
-
-      // Log the specific error message and details
-      console.error('Error Message:', error.message);
-      console.error('Error Details:', error.toJSON());
-    } finally {
-      setIsLoading(false);
-    }
+    PostReport({
+      cat_id: data.id,
+      reported_by: userData.user_id,
+      lat: coords.latitude,
+      long: coords.longitude,
+      description: description,
+      status: 1,
+      photo: images[0].base64,
+    })
+      .then(res => {
+        console.log(res);
+        if (res?.status === 200) {
+          Alert.alert(
+            'Sukses',
+            'Berhasil membuat Pengaduan Layanan Masyarakat',
+            [
+              {
+                text: 'OK',
+                onPress: () => navigation.goBack(),
+                style: 'default',
+              },
+            ],
+          );
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      })
+      .finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
@@ -298,7 +277,9 @@ const SOSPublic = () => {
         </ActionSheet>
         <Spacer height={20} />
         <Button
-          text="Proses Pengaduan"
+          text={
+            isLoading ? <ActivityIndicator color={WHITE} /> : 'Proses Pengaduan'
+          }
           textColor={WHITE}
           containerStyle={styles.btn}
           onPress={_onReport}

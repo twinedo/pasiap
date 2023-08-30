@@ -4,8 +4,10 @@ import {BaseContainer, Button, Spacer, Toolbar} from 'components';
 import {WHITE, PRIMARY, GREY1, GREY2} from 'styles/colors';
 import globalStyles from 'styles/globalStyles';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import userStore from 'store/userStore';
 
 const Information = () => {
+  const {userData} = userStore();
   const data = [
     {
       id: 1,
@@ -42,12 +44,18 @@ const Information = () => {
         prefix={
           <View style={[globalStyles.row, globalStyles.alignCenter]}>
             <Image
-              source={require('assets/images/logo.png')}
+              source={
+                userData?.photo === null ||
+                userData?.photo === '' ||
+                userData?.photo === undefined
+                  ? require('assets/images/logo.png')
+                  : {uri: userData?.photo}
+              }
               style={{width: 40, height: 40, borderRadius: 50}}
             />
             <Spacer width={10} />
             <Text style={[globalStyles.headingBold.h3, {color: WHITE}]}>
-              Ali Alkareem
+              {userData?.full_name}
             </Text>
           </View>
         }

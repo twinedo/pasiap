@@ -27,9 +27,11 @@ import reportStore, {IReportData} from 'store/reportStore';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import moment from 'moment';
+import userStore from 'store/userStore';
 
 const History = () => {
   const {isLoading, _getAllReports, reportData} = reportStore();
+  const {userData} = userStore();
 
   useEffect(() => {
     _getAllReports();
@@ -107,12 +109,18 @@ const History = () => {
         prefix={
           <View style={[globalStyles.row, globalStyles.alignCenter]}>
             <Image
-              source={require('assets/images/logo.png')}
+              source={
+                userData?.photo === null ||
+                userData?.photo === '' ||
+                userData?.photo === undefined
+                  ? require('assets/images/logo.png')
+                  : {uri: userData?.photo}
+              }
               style={{width: 40, height: 40, borderRadius: 50}}
             />
             <Spacer width={10} />
             <Text style={[globalStyles.headingBold.h3, {color: WHITE}]}>
-              Ali Alkareem
+              {userData?.full_name}
             </Text>
           </View>
         }

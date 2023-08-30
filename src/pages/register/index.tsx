@@ -7,6 +7,7 @@ import {
   TextInput,
   Alert,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import globalStyles from 'styles/globalStyles';
@@ -29,13 +30,17 @@ import {request, PERMISSIONS} from 'react-native-permissions';
 import {jenisKelamin, maritalStates, religion} from 'utils/constants';
 import DatePicker from 'react-native-date-picker';
 import moment from 'moment';
+import {useAxios} from 'services/useAxios';
+import {API_MAIN} from '@env';
+import authStore from 'store/authStore';
 
 const RegisterSchema = Yup.object().shape({
   username: Yup.string().required('Username is Required'),
   password: Yup.string().required('Password is required'),
   passwordConf: Yup.string()
-    .equals([Yup.ref('password')], 'Password tidak sama')
+    // .equals([Yup.ref('password')], 'Password tidak sama')
     .required('Confirmation Password is required'),
+  email: Yup.string().email('Email tidak valid').required('Email harus diisi'),
   nik: Yup.string()
     .required('NIK is required')
     .min(16, 'NIK is 16 characters long'),
@@ -52,6 +57,7 @@ export interface IRegister {
   username: string;
   password: string;
   passwordConf: string;
+  email: string;
   nik: string;
   fullName: string;
   placeBirth: string;
@@ -75,6 +81,7 @@ const Register = () => {
 
   const [date, setDate] = useState(new Date());
   const [open, setOpen] = useState(false);
+  const {_onRegister, isRegisterLoading} = authStore();
 
   const _onCameraPress = async () => {
     request(PERMISSIONS.ANDROID.CAMERA).then(async () => {
@@ -82,6 +89,7 @@ const Register = () => {
         mediaType: 'photo',
         maxWidth: percentageWidth(100),
         maxHeight: 250,
+        includeBase64: true,
       });
       console.log('result cam', result);
       actionSheetRef.current?.hide();
@@ -105,6 +113,7 @@ const Register = () => {
       quality: 1,
       maxWidth: percentageWidth(100),
       maxHeight: 250,
+      includeBase64: true,
     });
     console.log('result gallery', result.assets);
     actionSheetRef.current?.hide();
@@ -126,6 +135,12 @@ const Register = () => {
 
   console.log('imagesKTP', imageKTP);
   console.log('imageProfile', imageProfile);
+
+  const _onSubmitRegister = async (
+    values: IRegister & {identity_card_photo: string; photo: string},
+  ) => {
+    _onRegister(values, imageKTP[0]?.base64!, imageProfile[0]?.base64!);
+  };
 
   return (
     <BaseContainer scrollable>
@@ -177,11 +192,24 @@ const Register = () => {
           </Text>
           <Spacer height={20} />
           <Formik
-            initialValues={{} as IRegister}
+            initialValues={{
+              username: '',
+              password: '',
+              passwordConf: '',
+              email: '',
+              nik: '',
+              fullName: '',
+              placeBirth: '',
+              birthDate: '',
+              gender: 'Laki-laki',
+              religion: '',
+              relationships: 'Menikah',
+              phone: '',
+            }}
             validationSchema={RegisterSchema}
             onSubmit={values => {
-              Alert.alert(values.username.toString());
-              console.log(values);
+              _onSubmitRegister(values);
+              console.log('form', values);
             }}>
             {({
               handleChange,
@@ -283,6 +311,37 @@ const Register = () => {
                 {errors.passwordConf && touched.passwordConf ? (
                   <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
                     <ErrorMessage name="passwordConf" />
+                  </Text>
+                ) : null}
+                <Spacer height={20} />
+                <View
+                  style={[
+                    globalStyles.row,
+                    globalStyles.alignCenter,
+                    globalStyles.horizontalDefaultPadding,
+                    {
+                      backgroundColor: GREY1,
+                      width: '100%',
+                      height: 40,
+                      borderRadius: 5,
+                    },
+                  ]}>
+                  <Ionicons name="mail" size={24} color={GREY2} />
+                  <Spacer width={10} />
+                  <View style={globalStyles.displayFlex}>
+                    <TextInput
+                      placeholder="Email"
+                      placeholderTextColor={GREY2}
+                      keyboardType="email-address"
+                      onChangeText={handleChange('email')}
+                      onBlur={handleBlur('email')}
+                      value={values.email}
+                    />
+                  </View>
+                </View>
+                {errors.email && touched.email ? (
+                  <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
+                    <ErrorMessage name="email" />
                   </Text>
                 ) : null}
 
@@ -463,7 +522,7 @@ const Register = () => {
                   defaultButtonText="Jenis Kelamin"
                   data={jenisKelamin}
                   onSelect={(value: any) => {
-                    setFieldValue('gender', value.value);
+                    setFieldValue('gender', value.gender);
                     console.log(value);
                   }}
                   keyItem="gender"
@@ -500,7 +559,7 @@ const Register = () => {
                   defaultButtonText="Agama"
                   data={religion}
                   onSelect={(value: any) => {
-                    setFieldValue('religion', value.value);
+                    setFieldValue('religion', value.id);
                     console.log(value);
                   }}
                   keyItem="religion"
@@ -712,7 +771,13 @@ const Register = () => {
                   </View>
                 </ActionSheet>
                 <Button
-                  text="REGISTER"
+                  text={
+                    isRegisterLoading ? (
+                      <ActivityIndicator color={WHITE} />
+                    ) : (
+                      'REGISTER'
+                    )
+                  }
                   textColor={WHITE}
                   containerStyle={{
                     backgroundColor: PRIMARY,
@@ -722,7 +787,10 @@ const Register = () => {
                   }}
                   // disabled={!isValid}
                   // onPress={() => navigation.navigate('NavMainMenu')}
-                  onPress={handleSubmit}
+                  onPress={() => {
+                    handleSubmit();
+                    // Alert.alert('Please');
+                  }}
                   // onPress={() => Alert.alert('CUk')}
                 />
                 <Spacer height={30} />

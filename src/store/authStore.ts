@@ -9,6 +9,7 @@ import {Alert} from 'react-native';
 
 import userStore from './userStore';
 import {fetchAPI} from 'services/fetch';
+import {IRegister} from 'pages/register';
 
 interface IAuthState {
   user_id: number;
@@ -25,9 +26,15 @@ interface IAuthStore {
   _onLogin: (data: {username: string; password: string}) => void;
   _onLogout: () => void;
   _onCheckExpired: () => void;
+  _onRegister: (
+    data: IRegister,
+    imageKTP: string,
+    imageProfile: string,
+  ) => void;
   loginData?: IAuthState;
   isError?: boolean;
   errorMessage?: string;
+  isRegisterLoading?: boolean;
 }
 
 const initState: IAuthState = {
@@ -45,6 +52,7 @@ const authStore = create<IAuthStore>()(
       (set, get) => ({
         isLoading: false,
         isError: false,
+        isRegisterLoading: false,
         _onLogin: async data => {
           // set({isLoading: true});
           try {
@@ -87,6 +95,7 @@ const authStore = create<IAuthStore>()(
             }
           } catch (error: any) {
             console.error('error login', error);
+            Alert.alert('Gagal', error?.data?.message);
             set({
               isLoading: false,
               isLoggedIn: false,
@@ -123,6 +132,48 @@ const authStore = create<IAuthStore>()(
             get()._onLogout();
           }
           set({isLoading: false});
+        },
+        _onRegister: async (
+          values: IRegister,
+          imageKTP: string,
+          imageProfile: string,
+        ) => {
+          try {
+            set({isRegisterLoading: true});
+            const response = await fetchAPI({
+              url: `${API_MAIN}/register`,
+              method: 'post',
+              data: {
+                name: values.fullName,
+                username: values.username,
+                email: values.email,
+                password: values.password,
+                password_confirmation: values.passwordConf,
+                phone: values.phone,
+                sid: values.nik,
+                birth_place: values.placeBirth,
+                birth_date: values.birthDate,
+                sex: values.gender,
+                religion: values.religion,
+                marital_status: values.relationships,
+                identity_card_photo: imageKTP,
+                photo: imageProfile,
+              },
+            });
+
+            console.log('response regis', response);
+            if (response?.status === 201) {
+              Alert.alert('Berhasil', 'Anda berhasil mendaftar Akun');
+            }
+          } catch (error) {
+            console.error('error', error);
+            Alert.alert(
+              'Gagal, status: ' + error?.status,
+              error?.data?.message,
+            );
+          } finally {
+            set({isRegisterLoading: false});
+          }
         },
       }),
       {

@@ -12,7 +12,7 @@ import React, {useState, useRef, useEffect} from 'react';
 import {BaseContainer, Button, Spacer, Toolbar} from 'components';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {BLACK, GREY1, GREY2, PRIMARY, WHITE} from 'styles/colors';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RoutesParam} from 'routes/types';
 import globalStyles from 'styles/globalStyles';
@@ -24,22 +24,15 @@ import {PERMISSIONS, request} from 'react-native-permissions';
 import Geolocation from '@react-native-community/geolocation';
 import userStore from 'store/userStore';
 import {PostReport} from 'services/handler';
-import {Dirs, FileSystem} from 'react-native-file-access';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import {API_MAIN} from '@env';
-import {useAxios} from 'services/useAxios';
-import {fetchAPI} from 'services/fetch';
-import authStore from 'store/authStore';
-import {Form, Formik} from 'formik';
+import {FileSystem} from 'react-native-file-access';
+import {Formik} from 'formik';
 // import fs from 'fs';
 
 const SOSFire = () => {
   const navigation =
     useNavigation<StackNavigationProp<RoutesParam, 'SOSFire'>>();
   const actionSheetRef = useRef<ActionSheetRef>(null);
-  const route = useRoute();
-  const {loginData} = authStore();
+  const route = useRoute<RouteProp<RoutesParam, 'SOSFire'>>();
   const {data} = route.params;
   const {userData} = userStore();
   const [images, setImages] = useState<ImagePicker.Asset[]>([]);
@@ -74,12 +67,13 @@ const SOSFire = () => {
         mediaType: 'photo',
         maxWidth: percentageWidth(100),
         maxHeight: 250,
+        includeBase64: true,
       });
       console.log('result cam', result);
       actionSheetRef.current?.hide();
       const resultArr = result.assets;
       const mergedArray = [...images, ...resultArr!];
-      FileSystem.exists(mergedArray[0].uri)
+      FileSystem.exists(mergedArray[0]?.uri!)
         .then(res => {
           console.log('exists', res);
         })
@@ -98,13 +92,14 @@ const SOSFire = () => {
         quality: 1,
         maxWidth: percentageWidth(100),
         maxHeight: 250,
+        includeBase64: true,
       });
       console.log('result gallery', result.assets);
       actionSheetRef.current?.hide();
       const resultArr = result.assets;
       const mergedArray = [...images, ...resultArr!];
       // _onUploadImage(mergedArray);
-      FileSystem.exists(mergedArray[0].uri)
+      FileSystem.exists(mergedArray[0]?.uri!)
         .then(res => {
           console.log('exists', res);
         })
@@ -118,95 +113,31 @@ const SOSFire = () => {
   const _onReport = () => {
     setIsLoading(true);
 
-    // const statFile = await FileSystem.stat(images[0]?.uri);
-    // console.log('statFile', statFile);
-    console.log('images', images[0]);
-    var myHeaders = new Headers();
-    myHeaders.append(
-      'Content-Type',
-      'multipart/form-data; charset=utf-8; boundary=' +
-        Math.random().toString().substr(2),
-    );
-    myHeaders.append('Accept', 'application/json');
-    myHeaders.append('Authorization', `Bearer ${loginData?.token}`);
-
-    var formData = new FormData();
-    formData.append('cat_id', '2');
-    formData.append('reported_by', '3');
-    formData.append('lat', '12345');
-    formData.append('long', '54321');
-    formData.append('description', 'Kebakaran bang');
-    formData.append('status', '1');
-    formData.append('photo', {
-      uri: images[0].uri,
-      name: images[0].fileName,
-      mime: images[0].type,
-      // type: statFile.type,
-      // mimes: images[0].type,
-    });
-
-    // console.log('uri', images[0].uri);
-    // console.log('type', images[0].type);
-    // console.log('fileName', images[0].fileName);
-    // try {
-    fetch(`${API_MAIN}/reports`, {
-      method: 'post',
-      body: formData,
-      // headers: {
-      //   'Content-Type':
-      //     'multipart/form-data; charset=utf-8; boundary=' +
-      //     Math.random().toString().substr(2),
-      //   Authorization: `Bearer ${loginData?.token}`,
-      // },
-      headers: myHeaders,
+    PostReport({
+      cat_id: data.id,
+      reported_by: userData.user_id,
+      lat: coords.latitude,
+      long: coords.longitude,
+      description: 'Kebakaran',
+      status: 1,
+      photo: images[0].base64,
     })
-      .then(response => response.text())
-      .then(result => console.log(result))
-      .catch(error => console.log('error', error))
+      .then(res => {
+        console.log(res);
+        if (res?.status === 200) {
+          Alert.alert('Sukses', 'Berhasil membuat Pengaduan Kebakaran', [
+            {
+              text: 'OK',
+              onPress: () => navigation.goBack(),
+              style: 'default',
+            },
+          ]);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      })
       .finally(() => setIsLoading(false));
-    // console.log('res upload', response);
-    // } catch (error) {
-    //   console.error(error);
-    //   console.error('API Error:', error);
-
-    //   // Log the specific error message and details
-    //   console.error('Error Message:', error.message);
-    //   console.error('Error Details:', error.toJSON());
-    // } finally {
-    //   setIsLoading(false);
-    // }
-    // PostReport(
-    //   {
-    //     cat_id: data.id,
-    //     reported_by: userData.user_id,
-    //     lat: coords.latitude,
-    //     long: coords.longitude,
-    //     description: 'Kebakaran',
-    //     status: 1,
-    //     // photo: images[0].uri,
-    //     photo: 'https://blog.idrsolutions.com/app/uploads/2017/02/JPEG-1.png',
-    //   },
-    //   {
-    //     'Content-Type': 'multipart/form-data',
-    //   },
-    // )
-    //   .then(res => {
-    //     console.log(res);
-    //     if (res?.status === 200) {
-    //       Alert.alert('Sukses', 'Berhasil membuat Pengaduan Kebakaran', [
-    //         {
-    //           text: 'OK',
-    //           onPress: () => navigation.goBack(),
-    //           style: 'default',
-    //         },
-    //       ]);
-    //     }
-    //   })
-    //   .catch(err => {
-    //     console.log(err);
-    //   })
-    //   .finally(() => setIsLoading(false));
-    // }
   };
 
   return (

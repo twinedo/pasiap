@@ -96,7 +96,13 @@ const SettingsPage = () => {
           },
         ]}>
         <Image
-          source={require('assets/images/logo.png')}
+          source={
+            userData?.photo === null ||
+            userData?.photo === '' ||
+            userData?.photo === undefined
+              ? require('assets/images/logo.png')
+              : {uri: userData?.photo}
+          }
           style={{
             width: 70,
             height: 70,
