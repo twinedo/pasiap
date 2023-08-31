@@ -5,10 +5,12 @@ import {
   View,
   Alert,
   ActivityIndicator,
+  Pressable,
+  Image,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {BaseContainer, Button, Spacer, Toolbar} from 'components';
-import {GREY1, GREY2, PRIMARY, WHITE} from 'styles/colors';
+import {BLACK, GREY1, GREY2, PRIMARY, WHITE} from 'styles/colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -18,6 +20,11 @@ import userStore from 'store/userStore';
 import {PostReport} from 'services/handler';
 import Geolocation from '@react-native-community/geolocation';
 import reportStore from 'store/reportStore';
+import * as ImagePicker from 'react-native-image-picker';
+import {PERMISSIONS, request} from 'react-native-permissions';
+import {percentageWidth} from 'utils/screen_size';
+import ActionSheet, {ActionSheetRef} from 'react-native-actions-sheet';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const SOSGeneral = () => {
   const navigation =
@@ -31,6 +38,9 @@ const SOSGeneral = () => {
     latitude: 0,
     longitude: 0,
   });
+
+  const [images, setImages] = useState<ImagePicker.Asset[]>([]);
+
   const [isLoading, setIsLoading] = useState(false);
 
   const [generalState, setGeneralState] = useState({
@@ -38,6 +48,40 @@ const SOSGeneral = () => {
     email: userData.email,
     description: '',
   });
+  const actionSheetRef = useRef<ActionSheetRef>(null);
+
+  const _onCameraPress = async () => {
+    request(PERMISSIONS.ANDROID.CAMERA).then(async () => {
+      const result = await ImagePicker.launchCamera({
+        mediaType: 'photo',
+        maxWidth: percentageWidth(100),
+        maxHeight: 250,
+      });
+      console.log('result cam', result);
+      actionSheetRef.current?.hide();
+      const resultArr = result.assets;
+      const mergedArray = [...images, ...resultArr!];
+      setImages(mergedArray);
+      // _onUploadImage(mergedArray);
+    });
+  };
+
+  const _onGalleryPress = async () => {
+    request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION).then(async () => {
+      const result = await ImagePicker.launchImageLibrary({
+        mediaType: 'photo',
+        quality: 1,
+        maxWidth: percentageWidth(100),
+        maxHeight: 250,
+      });
+      console.log('result gallery', result.assets);
+      actionSheetRef.current?.hide();
+      const resultArr = result.assets;
+      const mergedArray = [...images, ...resultArr!];
+      // _onUploadImage(mergedArray);
+      setImages(mergedArray);
+    });
+  };
 
   useEffect(() => {
     Geolocation.getCurrentPosition(
@@ -70,6 +114,7 @@ const SOSGeneral = () => {
         long: coords.longitude,
         description: generalState.description,
         status: 1,
+        photo: images[0].base64,
       })
         .then(res => {
           console.log(res);
@@ -183,6 +228,65 @@ const SOSGeneral = () => {
             />
           </View>
         </View>
+        <Spacer height={20} />
+        <Pressable
+          onPress={() => actionSheetRef.current?.show()}
+          style={[
+            globalStyles.justifyCenter,
+            globalStyles.alignCenter,
+            {
+              width: 'auto',
+              height: 240,
+              borderRadius: 10,
+              overflow: 'hidden',
+              backgroundColor: GREY1,
+            },
+          ]}>
+          {images.length === 0 ? (
+            <>
+              <MaterialIcons name="add-a-photo" size={50} color={WHITE} />
+              <Text style={[globalStyles.headingBold.h3, {color: WHITE}]}>
+                Upload Foto
+              </Text>
+            </>
+          ) : (
+            <Image
+              //   source={require('assets/images/logo.png')}
+              source={{uri: images[0].uri}}
+              style={{
+                width: '100%',
+                height: '100%',
+                resizeMode: 'cover',
+              }}
+            />
+          )}
+        </Pressable>
+        <ActionSheet ref={actionSheetRef}>
+          <View
+            style={[
+              globalStyles.horizontalDefaultPadding,
+              globalStyles.verticalDefaultPadding,
+            ]}>
+            <Text style={[globalStyles.headingBold.h3]}>
+              Pilih Gambar Dari:
+            </Text>
+            <Pressable
+              style={[globalStyles.row, globalStyles.alignCenter]}
+              onPress={_onCameraPress}>
+              <Ionicons name="camera" size={50} color={BLACK} />
+              <Spacer width={10} />
+              <Text style={[globalStyles.headingRegular.h3]}>Kamera</Text>
+            </Pressable>
+            <Spacer width={5} />
+            <Pressable
+              style={[globalStyles.row, globalStyles.alignCenter]}
+              onPress={_onGalleryPress}>
+              <Ionicons name="images" size={50} color={BLACK} />
+              <Spacer width={10} />
+              <Text style={[globalStyles.headingRegular.h3]}>Gallery</Text>
+            </Pressable>
+          </View>
+        </ActionSheet>
         <Spacer height={20} />
         <Button
           text={
