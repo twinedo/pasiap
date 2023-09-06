@@ -30,3 +30,25 @@ export const PostReport = async (
     return Promise.reject(error);
   }
 };
+
+export const UpdateReportByStatusID = async (
+  reportID: number,
+  userID: number,
+  statusID: number,
+) => {
+  try {
+    const response = await useAxios({
+      url: `${API_MAIN}/reports/status/${reportID}`,
+      method: 'post',
+      data: {
+        taken_by: userID,
+        status: statusID,
+      },
+    });
+    console.log('res update stat response', response);
+    return Promise.resolve(response);
+  } catch (error) {
+    console.error(error);
+    return Promise.reject(error);
+  }
+};

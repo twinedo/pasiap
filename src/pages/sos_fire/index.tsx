@@ -19,13 +19,15 @@ import globalStyles from 'styles/globalStyles';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'react-native-image-picker';
 import ActionSheet, {ActionSheetRef} from 'react-native-actions-sheet';
-import {percentageWidth} from 'utils/screen_size';
+import {percentageHeight, percentageWidth} from 'utils/screen_size';
 import {PERMISSIONS, request} from 'react-native-permissions';
 import Geolocation from '@react-native-community/geolocation';
 import userStore from 'store/userStore';
 import {PostReport} from 'services/handler';
 import {FileSystem} from 'react-native-file-access';
 import {Formik} from 'formik';
+import WebView from 'react-native-webview';
+import {WebViewNavigationEvent} from 'react-native-webview/lib/RNCWebViewNativeComponent';
 // import fs from 'fs';
 
 const SOSFire = () => {
@@ -167,7 +169,7 @@ const SOSFire = () => {
         <Spacer height={15} />
         <Formik initialValues={{}} onSubmit={_onReport}>
           {({}) => (
-            <>
+            <View style={[globalStyles.displayFlex]}>
               <View
                 style={[
                   globalStyles.row,
@@ -224,19 +226,48 @@ const SOSFire = () => {
                 )}
               </Pressable>
               <Spacer height={30} />
-              <Pressable
+              {/* <Pressable
                 style={[
                   globalStyles.justifyCenter,
                   globalStyles.alignCenter,
                   {
-                    width: 'auto',
+                    // width: percentageWidth(90),
                     height: 240,
                     borderRadius: 10,
                     overflow: 'hidden',
-                    backgroundColor: GREY1,
+                    borderWidth: 1,
+                    // backgroundColor: GREY1,
                   },
-                ]}
+                ]}> */}
+              <WebView
+                startInLoadingState={true}
+                scalesPageToFit={true}
+                androidLayerType={'software'}
+                source={{
+                  html: `<iframe src="https://maps.google.com/maps?q=${
+                    coords.latitude
+                  }, ${
+                    coords.longitude
+                  }&z=20&output=embed" frameborder="0" style="border:0; width: ${percentageWidth(
+                    200,
+                  )}px; height: ${percentageHeight(
+                    55,
+                  )}px; borderRadius:20"></iframe>`,
+                  baseUrl: 'https://maps.google.com/maps',
+                }}
+                onLoadEnd={e => console.log(e.currentTarget)}
+                style={{
+                  // marginTop: 20,
+                  width: percentageWidth(100),
+                  height: 240,
+                  borderRadius: 50,
+                  overflow: 'hidden',
+                  borderWidth: 5,
+                  elevation: 5,
+                }}
+                onError={error => console.error('errorwebview', error)}
               />
+              {/* </Pressable> */}
               <Spacer height={20} />
               <Button
                 text={
@@ -256,7 +287,7 @@ const SOSFire = () => {
                 onPress={_onReport}
                 disabled={images.length === 0 || isLoading ? true : false}
               />
-            </>
+            </View>
           )}
         </Formik>
       </View>

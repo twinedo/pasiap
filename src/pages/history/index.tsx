@@ -6,6 +6,7 @@ import {
   View,
   ListRenderItem,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import React, {useEffect} from 'react';
 import {BaseContainer, Toolbar, Spacer, Button, LoadingLogo} from 'components';
@@ -28,10 +29,13 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import moment from 'moment';
 import userStore from 'store/userStore';
+import authStore from 'store/authStore';
+import {UpdateReportByStatusID} from 'services/handler';
 
 const History = () => {
   const {isLoading, _getAllReports, reportData} = reportStore();
   const {userData} = userStore();
+  const {loginData} = authStore();
 
   useEffect(() => {
     _getAllReports();
@@ -40,6 +44,30 @@ const History = () => {
   }, []);
 
   console.log('reportData', reportData);
+
+  const _onAcceptTask = (reportID: number, id: number) => {
+    UpdateReportByStatusID(reportID, loginData?.user_id!, id === 1 ? 2 : 3)
+      .then(res => {
+        if (res?.status === 200) {
+          _getAllReports();
+        }
+      })
+      .catch(err => {
+        Alert.alert('Error', err.toString());
+      });
+  };
+
+  const _onCompleteTask = (reportID: number, id: number) => {
+    UpdateReportByStatusID(reportID, loginData?.user_id!, id === 1 ? 2 : 3)
+      .then(res => {
+        if (res?.status === 200) {
+          _getAllReports();
+        }
+      })
+      .catch(err => {
+        Alert.alert('Error', err.toString());
+      });
+  };
 
   const renderItem: ListRenderItem<IReportData> = ({item}) => (
     <View style={[globalStyles.row]}>
@@ -54,7 +82,17 @@ const History = () => {
       <View style={[globalStyles.alignCenter]}>
         <FontAwesome6 name="circle-dot" color={BLUE} size={24} />
 
-        <View style={{height: 150, width: 2, backgroundColor: GREY10}} />
+        <View
+          style={{
+            height:
+              (item.status_id === 1 || item.status_id === 2) &&
+              loginData?.role === 'petugas'
+                ? 200
+                : 150,
+            width: 2,
+            backgroundColor: GREY10,
+          }}
+        />
       </View>
       <View
         style={[
@@ -67,7 +105,7 @@ const History = () => {
             globalStyles.horizontalDefaultPadding,
             globalStyles.verticalDefaultPadding,
             globalStyles.alignStart,
-            {borderRadius: 5, backgroundColor: GREY10},
+            {borderRadius: 5, backgroundColor: GREY10, elevation: 10},
           ]}>
           <View
             style={[
@@ -98,6 +136,61 @@ const History = () => {
               {item.description}
             </Text>
           </View>
+          <Spacer height={10} />
+          {item.status_id === 1 && loginData?.role === 'petugas' && (
+            <Button
+              text="Ambil Tugas"
+              textColor={PRIMARY}
+              textStyle={globalStyles.headingBold.h3}
+              containerStyle={{
+                backgroundColor: 'lightgreen',
+                width: '100%',
+                borderRadius: 8,
+              }}
+              onPress={() =>
+                Alert.alert(
+                  'Perhatian',
+                  'Apakah anda yakin ingin mengambil tugas ini?',
+                  [
+                    {
+                      text: 'Tidak',
+                      onPress: () => console.log('Cancel Pressed'),
+                      style: 'cancel',
+                    },
+                    {
+                      text: 'Ya',
+                      onPress: () => _onAcceptTask(item.id, item.status_id),
+                    },
+                  ],
+                )
+              }
+            />
+          )}
+          {item.status_id === 2 && loginData?.role === 'petugas' && (
+            <Button
+              text="Tugas Selesai"
+              textColor={PRIMARY}
+              textStyle={globalStyles.headingBold.h3}
+              containerStyle={{
+                backgroundColor: 'lightgreen',
+                width: '100%',
+                borderRadius: 8,
+              }}
+              onPress={() =>
+                Alert.alert('Perhatian', 'Apakah tugas sudah selesai?', [
+                  {
+                    text: 'Tidak',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'Ya',
+                    onPress: () => _onCompleteTask(item.id, item.status_id),
+                  },
+                ])
+              }
+            />
+          )}
         </View>
       </View>
     </View>

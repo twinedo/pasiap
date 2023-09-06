@@ -10,6 +10,7 @@ import {
   ScrollView,
   RefreshControl,
   ListRenderItem,
+  Alert,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {BaseContainer, Button, LoadingLogo, Spacer, Toolbar} from 'components';
@@ -24,6 +25,7 @@ import {
   GREY10,
   BLUE,
   GREY1,
+  ORANGE,
 } from 'styles/colors';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -42,13 +44,16 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import moment from 'moment';
 import {percentageWidth} from 'utils/screen_size';
+import {UpdateReportByStatusID} from 'services/handler';
 
 const Home = () => {
   const navigation = useNavigation<StackNavigationProp<RoutesParam, 'Home'>>();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const {userData, _getUserData, isLoading} = userStore();
   const {loginData} = authStore();
+  console.log('loginData', loginData);
   const {categoryList, _getCategories} = categoriesStore();
+
   const {
     isLoading: isReportLoading,
     _getAllReports,
@@ -77,6 +82,12 @@ const Home = () => {
     _getCategories();
     Geolocation.requestAuthorization();
   }, []);
+
+  useEffect(() => {
+    if (loginData?.role !== 'user') {
+      _getAllReports();
+    }
+  }, [loginData?.role]);
 
   const [newCategList, setNewCategList] = useState(categoryList);
 
@@ -114,62 +125,141 @@ const Home = () => {
     }
   }, [categoryList?.length]);
 
+  const _onAcceptTask = (reportID: number, id: number) => {
+    UpdateReportByStatusID(reportID, loginData?.user_id!, id === 1 ? 2 : 3)
+      .then(res => {
+        if (res?.status === 200) {
+          _getAllReports();
+        }
+      })
+      .catch(err => {
+        Alert.alert('Error', err.toString());
+      });
+  };
+
+  const _onCompleteTask = (reportID: number, id: number) => {
+    UpdateReportByStatusID(reportID, loginData?.user_id!, id === 1 ? 2 : 3)
+      .then(res => {
+        if (res?.status === 200) {
+          _getAllReports();
+        }
+      })
+      .catch(err => {
+        Alert.alert('Error', err.toString());
+      });
+  };
+
   const renderItem: ListRenderItem<IReportData> = ({item}) => (
-    <View style={[globalStyles.row]}>
+    <View
+      style={[globalStyles.displayFlex, globalStyles.horizontalDefaultPadding]}>
       <View
         style={[
-          globalStyles.displayFlex,
           globalStyles.horizontalDefaultPadding,
+          globalStyles.verticalDefaultPadding,
+          globalStyles.alignStart,
+          {
+            borderRadius: 5,
+            backgroundColor: GREY10,
+            width: percentageWidth(70),
+            elevation: 10,
+          },
         ]}>
         <View
           style={[
-            globalStyles.horizontalDefaultPadding,
-            globalStyles.verticalDefaultPadding,
-            globalStyles.alignStart,
-            {borderRadius: 5, backgroundColor: GREY10},
+            globalStyles.row,
+            globalStyles.justifySpaceBetween,
+            globalStyles.alignCenter,
+            {width: '100%'},
           ]}>
           <View
             style={[
-              globalStyles.row,
-              globalStyles.justifySpaceBetween,
-              globalStyles.alignCenter,
-              {width: '100%'},
+              globalStyles.horizontalDefaultPadding,
+              {
+                backgroundColor:
+                  item.status_id === 2
+                    ? PRIMARY
+                    : item.status_id === 1
+                    ? YELLOW
+                    : RED,
+                borderRadius: 5,
+              },
             ]}>
-            <View
-              style={[
-                globalStyles.horizontalDefaultPadding,
-                {
-                  backgroundColor:
-                    item.status_id === 2
-                      ? PRIMARY
-                      : item.status_id === 1
-                      ? YELLOW
-                      : RED,
-                  borderRadius: 5,
-                },
-              ]}>
-              <Text style={[globalStyles.headingBlack.h3, {color: WHITE}]}>
-                {item.status_name}
-              </Text>
-            </View>
-            <Text style={[globalStyles.bodyBlack.h2, {color: GREY2}]}>
-              {moment(item.created_at).format('DD MMMM YYYY')}
+            <Text style={[globalStyles.headingBlack.h3, {color: WHITE}]}>
+              {item.status_name}
             </Text>
           </View>
-
-          <View>
-            <Text style={[globalStyles.headingBlack.h3]}>
-              {item.category_name}
-            </Text>
-          </View>
-          <View style={[globalStyles.row, globalStyles.alignCenter]}>
-            <FontAwesome name="map-marker" size={24} color={BLACK} />
-            <Spacer width={10} />
-            <Text style={[globalStyles.headingRegular.h3]}>
-              {item.description}
-            </Text>
-          </View>
+          <Text style={[globalStyles.bodyBlack.h2, {color: GREY2}]}>
+            {moment(item.created_at).format('DD MMMM YYYY')}
+          </Text>
         </View>
+
+        <View>
+          <Text style={[globalStyles.headingBlack.h3]}>
+            {item.category_name}
+          </Text>
+        </View>
+        <View style={[globalStyles.row, globalStyles.alignCenter]}>
+          <FontAwesome name="map-marker" size={24} color={BLACK} />
+          <Spacer width={10} />
+          <Text style={[globalStyles.headingRegular.h3]}>
+            {item.description}
+          </Text>
+        </View>
+        <Spacer height={15} />
+        {item.status_id === 1 && loginData?.role === 'petugas' && (
+          <Button
+            text="Ambil Tugas"
+            textColor={PRIMARY}
+            textStyle={globalStyles.headingBold.h3}
+            containerStyle={{
+              backgroundColor: 'lightgreen',
+              width: '100%',
+              borderRadius: 8,
+            }}
+            onPress={() =>
+              Alert.alert(
+                'Perhatian',
+                'Apakah anda yakin ingin mengambil tugas ini?',
+                [
+                  {
+                    text: 'Tidak',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'Ya',
+                    onPress: () => _onAcceptTask(item.id, item.status_id),
+                  },
+                ],
+              )
+            }
+          />
+        )}
+        {item.status_id === 2 && loginData?.role === 'petugas' && (
+          <Button
+            text="Tugas Selesai"
+            textColor={PRIMARY}
+            textStyle={globalStyles.headingBold.h3}
+            containerStyle={{
+              backgroundColor: 'lightgreen',
+              width: '100%',
+              borderRadius: 8,
+            }}
+            onPress={() =>
+              Alert.alert('Perhatian', 'Apakah tugas sudah selesai?', [
+                {
+                  text: 'Tidak',
+                  onPress: () => console.log('Cancel Pressed'),
+                  style: 'cancel',
+                },
+                {
+                  text: 'Ya',
+                  onPress: () => _onCompleteTask(item.id, item.status_id),
+                },
+              ])
+            }
+          />
+        )}
       </View>
     </View>
   );
@@ -220,50 +310,62 @@ const Home = () => {
             {backgroundColor: WHITE},
           ]}>
           <Text style={[globalStyles.headingBold.h2, {color: PRIMARY}]}>
-            Anda Butuh Bantuan?
+            {loginData?.role === 'petugas'
+              ? 'Daftar Pengaduan Terkini'
+              : 'Anda Butuh Bantuan?'}
           </Text>
           <Spacer height={10} />
-          <Text
-            style={[
-              globalStyles.headingRegular.h3,
-              globalStyles.textAlignCenter,
-              {color: GREY2},
-            ]}>
-            Tekan tombol SOS untuk mengirimkan aduan dengan lokasi anda saat ini
-          </Text>
-          <Spacer height={30} />
-          <Pressable
-            onPress={() => setIsModalVisible(true)}
-            style={[
-              globalStyles.justifyCenter,
-              globalStyles.alignCenter,
-              {
-                width: 100,
-                height: 100,
-                backgroundColor: PRIMARY,
-                borderRadius: 100,
-              },
-            ]}>
-            <Text style={[globalStyles.headingBold.h1, {color: WHITE}]}>
-              SOS
+          {loginData?.role !== 'petugas' && (
+            <Text
+              style={[
+                globalStyles.headingRegular.h3,
+                globalStyles.textAlignCenter,
+                {color: GREY2},
+              ]}>
+              Tekan tombol SOS untuk mengirimkan aduan dengan lokasi anda saat
+              ini
             </Text>
-          </Pressable>
+          )}
+          {loginData?.role !== 'petugas' && (
+            <>
+              <Spacer height={30} />
+              <Pressable
+                onPress={() => setIsModalVisible(true)}
+                style={[
+                  globalStyles.justifyCenter,
+                  globalStyles.alignCenter,
+                  {
+                    width: 100,
+                    height: 100,
+                    backgroundColor: PRIMARY,
+                    borderRadius: 100,
+                  },
+                ]}>
+                <Text style={[globalStyles.headingBold.h1, {color: WHITE}]}>
+                  SOS
+                </Text>
+              </Pressable>
+            </>
+          )}
 
-          <Spacer height={30} />
-          {reportData?.length > 0 ? (
-            <FlatList
-              data={reportData.slice(0, 3)}
-              // data={[]}
-              keyExtractor={item => item?.id.toString()}
-              renderItem={renderItem}
-              horizontal
-              refreshControl={
-                <RefreshControl
-                  onRefresh={_getAllReports}
-                  refreshing={isLoading}
-                />
-              }
-            />
+          {reportData?.length > 0 && loginData?.role === 'petugas' ? (
+            <>
+              <Spacer height={30} />
+              <FlatList
+                data={reportData.slice(0, 3)}
+                // data={[]}
+                keyExtractor={item => item?.id.toString()}
+                renderItem={renderItem}
+                horizontal
+                style={{maxHeight: 210}}
+                refreshControl={
+                  <RefreshControl
+                    onRefresh={_getAllReports}
+                    refreshing={isLoading}
+                  />
+                }
+              />
+            </>
           ) : null}
 
           <Text style={[globalStyles.headingBold.h2, {color: PRIMARY}]}>

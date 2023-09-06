@@ -281,7 +281,14 @@ const SOSPublic = () => {
             isLoading ? <ActivityIndicator color={WHITE} /> : 'Proses Pengaduan'
           }
           textColor={WHITE}
-          containerStyle={styles.btn}
+          containerStyle={[
+            styles.btn,
+            {
+              backgroundColor:
+                description === '' || images.length === 0 ? GREY1 : PRIMARY,
+            },
+          ]}
+          disabled={description === '' || images.length === 0 ? true : false}
           onPress={_onReport}
         />
       </View>

@@ -16,7 +16,7 @@ interface IAuthState {
   token: string;
   // id_token: string;
   expires_in: number;
-  role: string;
+  role: 'user' | 'admin' | 'satpol_pp' | 'linmas' | 'petugas';
   // token_type: string;
 }
 
@@ -42,7 +42,7 @@ const initState: IAuthState = {
   token: '',
   expires_in: 0,
   // id_token: '',
-  role: '',
+  role: 'user',
   // token_type: '',
 };
 
@@ -66,7 +66,7 @@ const authStore = create<IAuthStore>()(
             if (response?.status === 200) {
               const token = response?.data?.token;
               const decoded: JwtPayload & {
-                role: string;
+                role: 'user' | 'admin' | 'satpol_pp' | 'linmas' | 'officer';
                 sub: number;
                 expires_in: number;
               } = jwt_decode(token);
@@ -86,7 +86,7 @@ const authStore = create<IAuthStore>()(
                   token: token,
                   user_id: decoded?.sub,
                   role: decoded?.role,
-                  expires_in: decoded?.exp,
+                  expires_in: decoded?.exp!,
                 },
                 isLoggedIn: true,
               });

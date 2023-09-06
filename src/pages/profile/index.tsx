@@ -7,7 +7,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   BaseContainer,
   Button,
@@ -34,52 +34,38 @@ import {percentageHeight, percentageWidth} from 'utils/screen_size';
 import {ErrorMessage, Formik} from 'formik';
 import * as Yup from 'yup';
 import moment from 'moment';
+import userStore from 'store/userStore';
 
-const RegisterSchema = Yup.object().shape({
-  username: Yup.string().required('Username is Required'),
-  password: Yup.string().required('Password is required'),
-  passwordConf: Yup.string()
-    .equals([Yup.ref('password')], 'Password tidak sama')
-    .required('Confirmation Password is required'),
-  nik: Yup.string()
-    .required('NIK is required')
-    .min(16, 'NIK is 16 characters long'),
+const ProfileSchema = Yup.object().shape({
   fullName: Yup.string().required('Fullname is required'),
-  placeBirth: Yup.string().required('PlaceBirth is required'),
-  birthDate: Yup.string().required('BirthDate is required'),
-  gender: Yup.string().required('Gender is required'),
-  religion: Yup.string().required('Religion is required'),
-  relationships: Yup.string().required('Relationships is required'),
-  phone: Yup.string().required('Phone is required').min(9, 'Phone tidak cocok'),
 });
 
-export interface IRegister {
-  username: string;
-  password: string;
-  passwordConf: string;
-  nik: string;
+export interface IProfile {
   fullName: string;
-  placeBirth: string;
-  birthDate: string;
-  gender: 'Laki-laki' | 'Perempuan';
-  religion: string;
-  relationships: 'Single' | 'Menikah' | 'Cerai';
-  phone: string;
-  imageKTP: string;
   imageProfile: string;
 }
 
 const Profile = () => {
   const navigation =
     useNavigation<StackNavigationProp<RoutesParam, 'Profile'>>();
-  const [imageKTP, setImageKTP] = useState<ImagePicker.Asset[]>([]);
+  const {userData, _getUserData, isUpdateError, _updateUserData} = userStore();
   const [imageProfile, setImageProfile] = useState<ImagePicker.Asset[]>([]);
   const actionSheetRef = useRef<ActionSheetRef>(null);
-  const [isImageLoading, setIsImageLoading] = useState(false);
-  const [imageParam, setImageParam] = useState<'ktp' | 'profile'>('ktp');
+  const [isEdit, setIsEdit] = useState(false);
 
-  const [date, setDate] = useState(new Date());
-  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    _getUserData();
+  }, []);
+
+  // useEffect(() => {
+  //   if (isUpdateError) {
+  //     if (isEdit) {
+  //       setImageProfile([...imageProfile, {uri: userData.photo}]);
+  //     } else {
+  //       setImageProfile([]);
+  //     }
+  //   }
+  // }, [isUpdateError]);
 
   const _onCameraPress = async () => {
     request(PERMISSIONS.ANDROID.CAMERA).then(async () => {
@@ -91,15 +77,11 @@ const Profile = () => {
       console.log('result cam', result);
       actionSheetRef.current?.hide();
       const resultArr = result.assets;
-      if (imageParam === 'ktp') {
-        const mergedArray = [...imageKTP, ...resultArr!];
-        setImageKTP(mergedArray);
-        _onUploadImage(mergedArray);
-      } else {
-        const mergedArray = [...imageProfile, ...resultArr!];
-        setImageProfile(mergedArray);
-        _onUploadImage(mergedArray);
-      }
+
+      const mergedArray = [...imageProfile, ...resultArr!];
+      setImageProfile(mergedArray);
+      // _onUploadImage(mergedArray);
+
       // …
     });
   };
@@ -114,19 +96,19 @@ const Profile = () => {
     console.log('result gallery', result.assets);
     actionSheetRef.current?.hide();
     const resultArr = result.assets;
-    if (imageParam === 'ktp') {
-      const mergedArray = [...imageKTP, ...resultArr!];
-      _onUploadImage(mergedArray);
-      setImageKTP(mergedArray);
-    } else {
-      const mergedArray = [...imageProfile, ...resultArr!];
-      _onUploadImage(mergedArray);
-      setImageProfile(mergedArray);
-    }
+
+    const mergedArray = [...imageProfile, ...resultArr!];
+    // _onUploadImage(mergedArray);
+    setImageProfile(mergedArray);
   };
 
-  const _onUploadImage = (img: ImagePicker.Asset[]) => {
-    setIsImageLoading(true);
+  const _onUpdateProfile = async (values: {fullName?: string}) => {
+    console.log(values);
+    if (imageProfile.length >= 0) {
+      _updateUserData(values?.fullName, imageProfile[0]?.base64);
+    } else {
+      _updateUserData(values?.fullName);
+    }
   };
 
   return (
@@ -150,12 +132,11 @@ const Profile = () => {
           globalStyles.verticalDefaultPadding,
         ]}>
         <Formik
-          initialValues={{} as IRegister}
-          validationSchema={RegisterSchema}
-          onSubmit={values => {
-            Alert.alert(values.username.toString());
-            console.log(values);
-          }}>
+          initialValues={{
+            fullName: userData?.full_name,
+          }}
+          validationSchema={ProfileSchema}
+          onSubmit={_onUpdateProfile}>
           {({
             handleChange,
             handleBlur,
@@ -163,483 +144,93 @@ const Profile = () => {
             values,
             errors,
             touched,
-            setFieldValue,
-            isValid,
           }) => (
             <>
-              <View
-                style={[
-                  globalStyles.row,
-                  globalStyles.alignCenter,
-                  globalStyles.horizontalDefaultPadding,
-                  {
-                    backgroundColor: GREY1,
-                    width: '100%',
-                    height: 40,
-                    borderRadius: 5,
-                  },
-                ]}>
-                <Ionicons name="person" size={24} color={GREY2} />
-                <Spacer width={10} />
-                <View style={globalStyles.displayFlex}>
-                  <TextInput
-                    placeholder="Username"
-                    placeholderTextColor={GREY2}
-                    onChangeText={handleChange('username')}
-                    onBlur={handleBlur('username')}
-                    value={values.username}
-                  />
-                </View>
-              </View>
-              {errors.username && touched.username ? (
-                <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
-                  <ErrorMessage name="username" />
-                </Text>
-              ) : null}
-              <Spacer height={20} />
-              <View
-                style={[
-                  globalStyles.row,
-                  globalStyles.alignCenter,
-                  globalStyles.horizontalDefaultPadding,
-                  {
-                    backgroundColor: GREY1,
-                    width: '100%',
-                    height: 40,
-                    borderRadius: 5,
-                  },
-                ]}>
-                <Foundation name="key" size={24} color={GREY2} />
-                <Spacer width={10} />
-                <View style={globalStyles.displayFlex}>
-                  <TextInput
-                    placeholder="Password"
-                    placeholderTextColor={GREY2}
-                    onChangeText={handleChange('password')}
-                    onBlur={handleBlur('password')}
-                    value={values.password}
-                    secureTextEntry
-                  />
-                </View>
-              </View>
-              {errors.password && touched.password ? (
-                <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
-                  <ErrorMessage name="password" />
-                </Text>
-              ) : null}
-              <Spacer height={20} />
-              <View
-                style={[
-                  globalStyles.row,
-                  globalStyles.alignCenter,
-                  globalStyles.horizontalDefaultPadding,
-                  {
-                    backgroundColor: GREY1,
-                    width: '100%',
-                    height: 40,
-                    borderRadius: 5,
-                  },
-                ]}>
-                <Foundation name="key" size={24} color={GREY2} />
-                <Spacer width={10} />
-                <View style={globalStyles.displayFlex}>
-                  <TextInput
-                    placeholder="Password Confirmation"
-                    placeholderTextColor={GREY2}
-                    onChangeText={handleChange('passwordConf')}
-                    onBlur={handleBlur('passwordConf')}
-                    value={values.passwordConf}
-                    secureTextEntry
-                  />
-                </View>
-              </View>
-              {errors.passwordConf && touched.passwordConf ? (
-                <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
-                  <ErrorMessage name="passwordConf" />
-                </Text>
-              ) : null}
-
-              <Spacer height={20} />
-              <View
-                style={[
-                  globalStyles.row,
-                  globalStyles.alignCenter,
-                  globalStyles.horizontalDefaultPadding,
-                  {
-                    backgroundColor: GREY1,
-                    width: '100%',
-                    height: 40,
-                    borderRadius: 5,
-                  },
-                ]}>
-                <MaterialCommunityIcons
-                  name="card-account-details"
-                  size={24}
-                  color={GREY2}
-                />
-                <Spacer width={10} />
-                <View style={globalStyles.displayFlex}>
-                  <TextInput
-                    placeholder="Nomor Induk Kependudukan"
-                    placeholderTextColor={GREY2}
-                    onChangeText={handleChange('nik')}
-                    onBlur={handleBlur('nik')}
-                    value={values.nik}
-                    keyboardType="decimal-pad"
-                  />
-                </View>
-              </View>
-              {errors.nik && touched.nik ? (
-                <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
-                  <ErrorMessage name="nik" />
-                </Text>
-              ) : null}
-              <Spacer height={20} />
-              <View
-                style={[
-                  globalStyles.row,
-                  globalStyles.alignCenter,
-                  globalStyles.horizontalDefaultPadding,
-                  {
-                    backgroundColor: GREY1,
-                    width: '100%',
-                    height: 40,
-                    borderRadius: 5,
-                  },
-                ]}>
-                <Ionicons name="person-outline" size={24} color={GREY2} />
-                <Spacer width={10} />
-                <View style={globalStyles.displayFlex}>
-                  <TextInput
-                    placeholder="Nama Lengkap"
-                    placeholderTextColor={GREY2}
-                    onChangeText={handleChange('fullName')}
-                    onBlur={handleBlur('fullName')}
-                    value={values.fullName}
-                  />
-                </View>
-              </View>
-              {errors.fullName && touched.fullName ? (
-                <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
-                  <ErrorMessage name="fullName" />
-                </Text>
-              ) : null}
-              <Spacer height={20} />
-              <View
-                style={[
-                  globalStyles.row,
-                  globalStyles.alignCenter,
-                  globalStyles.horizontalDefaultPadding,
-                  {
-                    backgroundColor: GREY1,
-                    width: '100%',
-                    height: 40,
-                    borderRadius: 5,
-                  },
-                ]}>
-                <Entypo name="location" size={24} color={GREY2} />
-                <Spacer width={10} />
-                <View style={globalStyles.displayFlex}>
-                  <TextInput
-                    placeholder="Tempat Lahir"
-                    placeholderTextColor={GREY2}
-                    onChangeText={handleChange('placeBirth')}
-                    onBlur={handleBlur('placeBirth')}
-                    value={values.placeBirth}
-                  />
-                </View>
-              </View>
-              {errors.placeBirth && touched.placeBirth ? (
-                <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
-                  <ErrorMessage name="placeBirth" />
-                </Text>
-              ) : null}
-              <Spacer height={20} />
-              <View
-                style={[
-                  globalStyles.row,
-                  globalStyles.alignCenter,
-                  globalStyles.horizontalDefaultPadding,
-                  {
-                    backgroundColor: GREY1,
-                    width: '100%',
-                    height: 40,
-                    borderRadius: 5,
-                  },
-                ]}>
-                <Ionicons name="calendar-outline" size={24} color={GREY2} />
-                <Spacer width={10} />
-                <View style={globalStyles.displayFlex}>
-                  <TextInput
-                    placeholder="Tanggal Lahir"
-                    placeholderTextColor={GREY2}
-                    onChangeText={() => {
-                      handleChange('birthDate');
-                      setOpen(true);
-                    }}
-                    onFocus={() => setOpen(true)}
-                    onPressIn={() => setOpen(true)}
-                    onBlur={handleBlur('birthDate')}
-                    value={values.birthDate}
-                  />
-                </View>
-              </View>
-              <DatePicker
-                modal
-                open={open}
-                date={date}
-                mode="date"
-                onConfirm={dat => {
-                  console.log('inidat', moment(dat).format('DD-MM-YYYY'));
-                  setOpen(false);
-                  setFieldValue('birthDate', moment(dat).format('DD-MM-YYYY'));
-                  setDate(dat);
-                }}
-                onCancel={() => {
-                  setOpen(false);
-                }}
-              />
-              {errors.birthDate && touched.birthDate ? (
-                <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
-                  <ErrorMessage name="birthDate" />
-                </Text>
-              ) : null}
-              <Spacer height={20} />
-              {/* <View
+              <View style={[globalStyles.row]}>
+                <Pressable
+                  onPress={() => {
+                    if (isEdit) {
+                      actionSheetRef.current?.show();
+                    }
+                  }}
                   style={[
-                    globalStyles.row,
+                    globalStyles.justifyCenter,
                     globalStyles.alignCenter,
-                    globalStyles.horizontalDefaultPadding,
                     {
+                      borderRadius: 10,
                       backgroundColor: GREY1,
-                      width: '100%',
-                      height: 40,
-                      borderRadius: 5,
-                    },
-                  ]}>
-                  <Ionicons name="people-outline" size={24} color={GREY2} />
-                  <Spacer width={10} />
-                  <View style={globalStyles.displayFlex}>
-                    <TextInput
-                      placeholder="Jenis Kelamin"
-                      placeholderTextColor={GREY2}
-                      onChangeText={handleChange('gender')}
-                      onBlur={handleBlur('gender')}
-                      value={values.gender}
-                    />
-                  </View>
-                </View> */}
-              <SelectPrimary
-                defaultButtonText="Jenis Kelamin"
-                data={jenisKelamin}
-                onSelect={(value: any) => {
-                  setFieldValue('gender', value.value);
-                  console.log(value);
-                }}
-                keyItem="gender"
-                renderDropdownIcon={() => (
-                  <Ionicons name="people-outline" size={24} color={GREY2} />
-                )}
-              />
-              {errors.gender && touched.gender ? (
-                <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
-                  <ErrorMessage name="gender" />
-                </Text>
-              ) : null}
-              <Spacer height={20} />
-              {/* <View
-                  style={[
-                    globalStyles.row,
-                    globalStyles.alignCenter,
-                    globalStyles.horizontalDefaultPadding,
-                    {
-                      backgroundColor: GREY1,
-                      width: '100%',
-                      height: 40,
-                      borderRadius: 5,
-                    },
-                  ]}>
-                  <MaterialCommunityIcons
-                    name="hands-pray"
-                    size={24}
-                    color={GREY2}
-                  />
-
-                </View> */}
-              <SelectPrimary
-                defaultButtonText="Agama"
-                data={religion}
-                onSelect={(value: any) => {
-                  setFieldValue('religion', value.value);
-                  console.log(value);
-                }}
-                keyItem="religion"
-                renderDropdownIcon={() => (
-                  <MaterialCommunityIcons
-                    name="hands-pray"
-                    size={24}
-                    color={GREY2}
-                  />
-                )}
-              />
-              {errors.religion && touched.religion ? (
-                <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
-                  <ErrorMessage name="religion" />
-                </Text>
-              ) : null}
-              <Spacer height={20} />
-              {/* <View
-                  style={[
-                    globalStyles.row,
-                    globalStyles.alignCenter,
-                    globalStyles.horizontalDefaultPadding,
-                    {
-                      backgroundColor: GREY1,
-                      width: '100%',
-                      height: 40,
-                      borderRadius: 5,
-                    },
-                  ]}>
-                  <Ionicons
-                    name="people-circle-sharp"
-                    size={24}
-                    color={GREY2}
-                  />
-                  <Spacer width={10} />
-                  <View style={globalStyles.displayFlex}>
-                    <TextInput
-                      placeholder="Status Perkawinan"
-                      placeholderTextColor={GREY2}
-                      onChangeText={handleChange('relationships')}
-                      onBlur={handleBlur('relationships')}
-                      value={values.relationships}
-                    />
-                  </View>
-                </View> */}
-              <SelectPrimary
-                defaultButtonText="Status Perkawinan"
-                data={maritalStates}
-                onSelect={(value: any) => {
-                  setFieldValue('relationships', value.value);
-                  console.log(value);
-                }}
-                keyItem="value"
-                renderDropdownIcon={() => (
-                  <Ionicons
-                    name="people-circle-sharp"
-                    size={24}
-                    color={GREY2}
-                  />
-                )}
-              />
-              {errors.relationships && touched.relationships ? (
-                <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
-                  <ErrorMessage name="relationships" />
-                </Text>
-              ) : null}
-              <Spacer height={20} />
-              <View
-                style={[
-                  globalStyles.row,
-                  globalStyles.alignCenter,
-                  globalStyles.horizontalDefaultPadding,
-                  {
-                    backgroundColor: GREY1,
-                    width: '100%',
-                    height: 40,
-                    borderRadius: 5,
-                  },
-                ]}>
-                <MaterialIcons name="phone-in-talk" size={32} color={GREY2} />
-                <Spacer width={10} />
-                <View style={globalStyles.displayFlex}>
-                  <TextInput
-                    placeholder="Nomor Telepon"
-                    placeholderTextColor={GREY2}
-                    onChangeText={handleChange('phone')}
-                    onBlur={handleBlur('phone')}
-                    value={values.phone}
-                    keyboardType="phone-pad"
-                  />
-                </View>
-              </View>
-              {errors.phone && touched.phone ? (
-                <Text style={[globalStyles.headingRegular.h3, {color: RED}]}>
-                  <ErrorMessage name="phone" />
-                </Text>
-              ) : null}
-              <Spacer height={20} />
-              <Pressable
-                onPress={() => {
-                  actionSheetRef.current?.show();
-                  setImageParam('ktp');
-                }}
-                style={[
-                  globalStyles.justifyCenter,
-                  globalStyles.alignCenter,
-                  {
-                    borderRadius: 10,
-                    backgroundColor: GREY1,
-                    width: '100%',
-                    height: 150,
-                    overflow: 'hidden',
-                  },
-                ]}>
-                {imageKTP.length === 0 ? (
-                  <>
-                    <MaterialIcons name="add-a-photo" size={50} color={WHITE} />
-                    <Text style={[globalStyles.headingBold.h3, {color: WHITE}]}>
-                      Foto KTP
-                    </Text>
-                  </>
-                ) : (
-                  <Image
-                    //   source={require('assets/images/logo.png')}
-                    source={{uri: imageKTP[0].uri}}
-                    style={{
-                      width: '100%',
+                      width: 150,
                       height: 150,
-                      resizeMode: 'stretch',
-                    }}
-                  />
-                )}
-              </Pressable>
-              <Spacer height={20} />
-              <Pressable
-                onPress={() => {
-                  actionSheetRef.current?.show();
-                  setImageParam('profile');
-                }}
-                style={[
-                  globalStyles.justifyCenter,
-                  globalStyles.alignCenter,
-                  {
-                    borderRadius: 10,
-                    backgroundColor: GREY1,
-                    width: '100%',
-                    height: 150,
-                    overflow: 'hidden',
-                  },
-                ]}>
-                {imageProfile.length === 0 ? (
-                  <>
-                    <MaterialIcons name="add-a-photo" size={50} color={WHITE} />
-                    <Text style={[globalStyles.headingBold.h3, {color: WHITE}]}>
-                      Foto Profile
+                      overflow: 'hidden',
+                    },
+                  ]}>
+                  {imageProfile.length === 0 && isEdit ? (
+                    <>
+                      <MaterialIcons
+                        name="add-a-photo"
+                        size={50}
+                        color={WHITE}
+                      />
+                      <Text
+                        style={[globalStyles.headingBold.h3, {color: WHITE}]}>
+                        Foto Profile
+                      </Text>
+                    </>
+                  ) : (
+                    <Image
+                      source={
+                        userData?.photo === null ||
+                        userData?.photo === '' ||
+                        userData?.photo === undefined
+                          ? require('assets/images/logo.png')
+                          : isEdit
+                          ? {uri: imageProfile[0]?.uri}
+                          : {uri: userData?.photo}
+                      }
+                      style={{
+                        width: 150,
+                        height: 150,
+                        resizeMode: 'stretch',
+                      }}
+                    />
+                  )}
+                </Pressable>
+                <Spacer width={15} />
+                <View style={[globalStyles.displayFlex]}>
+                  <Text style={globalStyles.headingBold.h3}>Nama Anda</Text>
+                  <View
+                    style={[
+                      globalStyles.row,
+                      globalStyles.alignCenter,
+                      globalStyles.horizontalDefaultPadding,
+                      {
+                        backgroundColor: GREY1,
+                        width: '100%',
+                        height: 40,
+                        borderRadius: 5,
+                      },
+                    ]}>
+                    <Ionicons name="person-outline" size={24} color={GREY2} />
+                    <Spacer width={10} />
+                    <View style={[globalStyles.displayFlex]}>
+                      <TextInput
+                        placeholder="Nama Lengkap"
+                        placeholderTextColor={GREY2}
+                        value={values.fullName}
+                        onChangeText={handleChange('fullName')}
+                        onBlur={handleBlur('fullName')}
+                        editable={isEdit}
+                      />
+                    </View>
+                  </View>
+                  {errors.fullName && touched.fullName && isEdit ? (
+                    <Text
+                      style={[globalStyles.headingRegular.h3, {color: RED}]}>
+                      <ErrorMessage name="fullName" />
                     </Text>
-                  </>
-                ) : (
-                  <Image
-                    //   source={require('assets/images/logo.png')}
-                    source={{uri: imageProfile[0].uri}}
-                    style={{
-                      width: '100%',
-                      height: 150,
-                      resizeMode: 'stretch',
-                    }}
-                  />
-                )}
-              </Pressable>
+                  ) : null}
+                </View>
+              </View>
               <Spacer height={30} />
               <ActionSheet ref={actionSheetRef}>
                 <View
@@ -670,7 +261,7 @@ const Profile = () => {
                 </View>
               </ActionSheet>
               <Button
-                text="REGISTER"
+                text={isEdit ? 'Simpan' : 'Edit'}
                 textColor={WHITE}
                 containerStyle={{
                   backgroundColor: PRIMARY,
@@ -680,23 +271,15 @@ const Profile = () => {
                 }}
                 // disabled={!isValid}
                 // onPress={() => navigation.navigate('NavMainMenu')}
-                onPress={handleSubmit}
+                onPress={() => {
+                  if (isEdit) {
+                    handleSubmit();
+                  }
+                  // isEdit ?  : _onUpdateProfile();
+                  setIsEdit(!isEdit);
+                }}
                 // onPress={() => Alert.alert('CUk')}
               />
-              <Spacer height={30} />
-              <Button
-                text="LOGIN"
-                textColor={PRIMARY}
-                containerStyle={{
-                  borderWidth: 2,
-                  borderColor: PRIMARY,
-                  width: '100%',
-                  height: 40,
-                  borderRadius: 5,
-                }}
-                onPress={() => navigation.goBack()}
-              />
-              <Spacer height={20} />
             </>
           )}
         </Formik>
