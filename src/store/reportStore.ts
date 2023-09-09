@@ -19,6 +19,7 @@ export interface IReportData {
   status_id: number;
   status_name: string;
   created_at: string;
+  location?: string;
 }
 
 interface IReportStore {

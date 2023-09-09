@@ -56,13 +56,20 @@ const SettingsPage = () => {
     },
     {
       id: 4,
+      name: 'Change Password',
+      isNavigate: true,
+      navigate: 'ChangePassword',
+      icon: <MaterialCommunityIcons name="lock" size={24} color={GREY2} />,
+    },
+    {
+      id: 5,
       name: 'PASIAP V.01',
       isNavigate: false,
       navigate: '',
       icon: <Octicons name="versions" size={24} color={GREY2} />,
     },
     {
-      id: 5,
+      id: 6,
       name: 'Logout',
       isNavigate: true,
       navigate: '',
@@ -138,7 +145,7 @@ const SettingsPage = () => {
           renderItem={({item}) => (
             <Pressable
               onPress={() => {
-                if (item.id === 5) {
+                if (item.id === 6) {
                   _onLogout();
                 } else if (item.id === 3) {
                   setIsModalVisible(true);
@@ -147,6 +154,8 @@ const SettingsPage = () => {
                   navigation.navigate('Profile');
                 } else if (item.id === 2) {
                   setIsModalFAQVisible(true);
+                } else {
+                  navigation.navigate(item.navigate);
                 }
               }}
               style={[

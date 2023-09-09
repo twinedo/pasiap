@@ -25,6 +25,7 @@ interface IUserStore {
   _getUserData: () => void;
   _updateUserData: (name?: string, photo?: string) => void;
   _onResetUser: () => void;
+  _onUpdateFCMToken: (token: string) => void;
   userData: IUserData;
   isLoading: boolean;
   isError?: boolean;
@@ -104,6 +105,20 @@ const userStore = create<IUserStore>()(
               },
               isUpdateError: true,
             });
+          }
+        },
+        _onUpdateFCMToken: async (token: string) => {
+          try {
+            const response = await useAxios({
+              url: `${API_MAIN}/tokens`,
+              method: 'post',
+              data: {token},
+            });
+            console.log('restoken', response);
+            return Promise.resolve(response);
+          } catch (error) {
+            console.error(error);
+            return Promise.reject(error);
           }
         },
         _onResetUser: () => {

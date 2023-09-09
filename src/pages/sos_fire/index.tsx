@@ -7,6 +7,7 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import React, {useState, useRef, useEffect} from 'react';
 import {BaseContainer, Button, Spacer, Toolbar} from 'components';
@@ -43,6 +44,7 @@ const SOSFire = () => {
     longitude: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [address, setAddress] = useState('');
 
   useEffect(() => {
     Geolocation.getCurrentPosition(
@@ -122,7 +124,8 @@ const SOSFire = () => {
       long: coords.longitude,
       description: 'Kebakaran',
       status: 1,
-      photo: images[0].base64,
+      photo: images[0]?.base64 ?? '',
+      location: address,
     })
       .then(res => {
         console.log(res);
@@ -157,76 +160,139 @@ const SOSFire = () => {
           />
         }
       />
-      <View
-        style={[
-          globalStyles.horizontalDefaultPadding,
-          globalStyles.verticalDefaultPadding,
-          globalStyles.displayFlex,
-        ]}>
-        <Text style={[globalStyles.headingRegular.h3]}>
-          Silahkan lengkapi data pengaduan dibawah
-        </Text>
-        <Spacer height={15} />
-        <Formik initialValues={{}} onSubmit={_onReport}>
-          {({}) => (
-            <View style={[globalStyles.displayFlex]}>
-              <View
-                style={[
-                  globalStyles.row,
-                  globalStyles.alignCenter,
-                  globalStyles.horizontalDefaultPadding,
-                  {
-                    backgroundColor: GREY1,
-                    width: '100%',
-                    height: 40,
-                    borderRadius: 5,
-                  },
-                ]}>
-                <Ionicons name="person" size={24} color={GREY2} />
-                <Spacer width={10} />
-                <View style={globalStyles.displayFlex}>
-                  <TextInput
-                    placeholder="Nama Anda"
-                    placeholderTextColor={GREY2}
-                    value={userData?.full_name}
-                  />
-                </View>
-              </View>
-              <Spacer height={15} />
-              <Pressable
-                onPress={() => actionSheetRef.current?.show()}
-                style={[
-                  globalStyles.justifyCenter,
-                  globalStyles.alignCenter,
-                  {
-                    width: 'auto',
-                    height: 240,
-                    borderRadius: 10,
-                    overflow: 'hidden',
-                    backgroundColor: GREY1,
-                  },
-                ]}>
-                {images.length === 0 ? (
-                  <>
-                    <MaterialIcons name="add-a-photo" size={50} color={WHITE} />
-                    <Text style={[globalStyles.headingBold.h3, {color: WHITE}]}>
-                      Upload Foto Kebakaran
-                    </Text>
-                  </>
-                ) : (
-                  <Image
-                    //   source={require('assets/images/logo.png')}
-                    source={{uri: images[0].uri}}
-                    style={{
+      <ScrollView contentContainerStyle={globalStyles.displayFlexGrow}>
+        <View
+          style={[
+            globalStyles.horizontalDefaultPadding,
+            globalStyles.verticalDefaultPadding,
+            globalStyles.displayFlex,
+          ]}>
+          <Text style={[globalStyles.headingRegular.h3]}>
+            Silahkan lengkapi data pengaduan dibawah
+          </Text>
+          <Spacer height={15} />
+          <Formik initialValues={{}} onSubmit={_onReport}>
+            {({}) => (
+              <View style={[globalStyles.displayFlex]}>
+                <View
+                  style={[
+                    globalStyles.row,
+                    globalStyles.alignCenter,
+                    globalStyles.horizontalDefaultPadding,
+                    {
+                      backgroundColor: GREY1,
                       width: '100%',
-                      height: '100%',
-                      resizeMode: 'cover',
-                    }}
-                  />
-                )}
-              </Pressable>
-              <Spacer height={30} />
-              {/* <Pressable
+                      height: 40,
+                      borderRadius: 5,
+                    },
+                  ]}>
+                  <Ionicons name="person" size={24} color={GREY2} />
+                  <Spacer width={10} />
+                  <View style={globalStyles.displayFlex}>
+                    <TextInput
+                      placeholder="Nama Anda"
+                      placeholderTextColor={GREY2}
+                      value={userData?.full_name}
+                    />
+                  </View>
+                </View>
+                <Spacer height={15} />
+                <View
+                  style={[
+                    globalStyles.row,
+                    globalStyles.alignStart,
+                    globalStyles.horizontalDefaultPadding,
+                    globalStyles.verticalDefaultPadding,
+                    {
+                      backgroundColor: GREY1,
+                      width: '100%',
+                      borderRadius: 5,
+                    },
+                  ]}>
+                  <Ionicons name="map" size={24} color={GREY2} />
+
+                  <Spacer width={10} />
+                  <View style={[globalStyles.displayFlex]}>
+                    <TextInput
+                      placeholder="Alamat Lengkap"
+                      placeholderTextColor={GREY2}
+                      multiline={true}
+                      numberOfLines={5}
+                      textAlignVertical="top"
+                      style={{paddingTop: 4}}
+                      onChangeText={(text: string) => setAddress(text)}
+                    />
+                  </View>
+                </View>
+                <Spacer height={15} />
+                <WebView
+                  startInLoadingState={true}
+                  scalesPageToFit={true}
+                  androidLayerType={'software'}
+                  source={{
+                    html: `<iframe src="https://maps.google.com/maps?q=${
+                      coords.latitude
+                    }, ${
+                      coords.longitude
+                    }&z=20&output=embed" frameborder="0" style="border:0; width: ${percentageWidth(
+                      200,
+                    )}px; height: ${percentageHeight(
+                      55,
+                    )}px; borderRadius:20"></iframe>`,
+                    baseUrl: 'https://maps.google.com/maps',
+                  }}
+                  onLoadEnd={e => console.log(e.currentTarget)}
+                  style={{
+                    // marginTop: 20,
+                    width: percentageWidth(100),
+                    height: 240,
+                    borderRadius: 50,
+                    overflow: 'hidden',
+                    borderWidth: 5,
+                    elevation: 5,
+                  }}
+                  onError={error => console.error('errorwebview', error)}
+                />
+                <Spacer height={15} />
+                <Pressable
+                  onPress={() => actionSheetRef.current?.show()}
+                  style={[
+                    globalStyles.justifyCenter,
+                    globalStyles.alignCenter,
+                    {
+                      width: 'auto',
+                      height: 240,
+                      borderRadius: 10,
+                      overflow: 'hidden',
+                      backgroundColor: GREY1,
+                    },
+                  ]}>
+                  {images.length === 0 ? (
+                    <>
+                      <MaterialIcons
+                        name="add-a-photo"
+                        size={50}
+                        color={WHITE}
+                      />
+                      <Text
+                        style={[globalStyles.headingBold.h3, {color: WHITE}]}>
+                        Upload Foto Kebakaran
+                      </Text>
+                    </>
+                  ) : (
+                    <Image
+                      //   source={require('assets/images/logo.png')}
+                      source={{uri: images[0].uri}}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        resizeMode: 'cover',
+                      }}
+                    />
+                  )}
+                </Pressable>
+                <Spacer height={30} />
+                {/* <Pressable
                 style={[
                   globalStyles.justifyCenter,
                   globalStyles.alignCenter,
@@ -239,58 +305,37 @@ const SOSFire = () => {
                     // backgroundColor: GREY1,
                   },
                 ]}> */}
-              <WebView
-                startInLoadingState={true}
-                scalesPageToFit={true}
-                androidLayerType={'software'}
-                source={{
-                  html: `<iframe src="https://maps.google.com/maps?q=${
-                    coords.latitude
-                  }, ${
-                    coords.longitude
-                  }&z=20&output=embed" frameborder="0" style="border:0; width: ${percentageWidth(
-                    200,
-                  )}px; height: ${percentageHeight(
-                    55,
-                  )}px; borderRadius:20"></iframe>`,
-                  baseUrl: 'https://maps.google.com/maps',
-                }}
-                onLoadEnd={e => console.log(e.currentTarget)}
-                style={{
-                  // marginTop: 20,
-                  width: percentageWidth(100),
-                  height: 240,
-                  borderRadius: 50,
-                  overflow: 'hidden',
-                  borderWidth: 5,
-                  elevation: 5,
-                }}
-                onError={error => console.error('errorwebview', error)}
-              />
-              {/* </Pressable> */}
-              <Spacer height={20} />
-              <Button
-                text={
-                  isLoading ? (
-                    <ActivityIndicator color={WHITE} />
-                  ) : (
-                    'Proses Pengaduan'
-                  )
-                }
-                textColor={WHITE}
-                containerStyle={[
-                  styles.btn,
-                  {
-                    backgroundColor: images.length === 0 ? GREY1 : PRIMARY,
-                  },
-                ]}
-                onPress={_onReport}
-                disabled={images.length === 0 || isLoading ? true : false}
-              />
-            </View>
-          )}
-        </Formik>
-      </View>
+
+                {/* </Pressable> */}
+                <Spacer height={20} />
+                <Button
+                  text={
+                    isLoading ? (
+                      <ActivityIndicator color={WHITE} />
+                    ) : (
+                      'Proses Pengaduan'
+                    )
+                  }
+                  textColor={WHITE}
+                  containerStyle={[
+                    styles.btn,
+                    {
+                      backgroundColor:
+                        images.length === 0 || address === '' ? GREY1 : PRIMARY,
+                    },
+                  ]}
+                  onPress={_onReport}
+                  disabled={
+                    images.length === 0 || address === '' || isLoading
+                      ? true
+                      : false
+                  }
+                />
+              </View>
+            )}
+          </Formik>
+        </View>
+      </ScrollView>
       <ActionSheet ref={actionSheetRef}>
         <View
           style={[

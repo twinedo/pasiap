@@ -1,6 +1,7 @@
 import {ReactNode} from 'react';
 
 export type RoutesParam = {
+  ChangePassword: undefined;
   Home: undefined;
   History: undefined;
   Information: undefined;

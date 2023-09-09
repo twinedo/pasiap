@@ -11,6 +11,7 @@ import {
   RefreshControl,
   ListRenderItem,
   Alert,
+  Platform,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {BaseContainer, Button, LoadingLogo, Spacer, Toolbar} from 'components';
@@ -148,6 +149,19 @@ const Home = () => {
         Alert.alert('Error', err.toString());
       });
   };
+  const _onOpenMap = async (address: string) => {
+    const destination = encodeURIComponent(`${address}`);
+    const provider = Platform.OS === 'ios' ? 'apple' : 'google';
+    const link = `http://maps.${provider}.com/?daddr=${destination}`;
+
+    try {
+      const supported = await Linking.canOpenURL(link);
+
+      if (supported) Linking.openURL(link);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const renderItem: ListRenderItem<IReportData> = ({item}) => (
     <View
@@ -201,8 +215,10 @@ const Home = () => {
         <View style={[globalStyles.row, globalStyles.alignCenter]}>
           <FontAwesome name="map-marker" size={24} color={BLACK} />
           <Spacer width={10} />
-          <Text style={[globalStyles.headingRegular.h3]}>
-            {item.description}
+          <Text
+            style={[globalStyles.headingRegular.h3, {color: BLUE}]}
+            onPress={() => _onOpenMap(item?.location!)}>
+            {item.location}
           </Text>
         </View>
         <Spacer height={15} />

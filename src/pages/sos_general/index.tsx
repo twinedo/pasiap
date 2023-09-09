@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Pressable,
   Image,
+  ScrollView,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {BaseContainer, Button, Spacer, Toolbar} from 'components';
@@ -22,9 +23,10 @@ import Geolocation from '@react-native-community/geolocation';
 import reportStore from 'store/reportStore';
 import * as ImagePicker from 'react-native-image-picker';
 import {PERMISSIONS, request} from 'react-native-permissions';
-import {percentageWidth} from 'utils/screen_size';
+import {percentageHeight, percentageWidth} from 'utils/screen_size';
 import ActionSheet, {ActionSheetRef} from 'react-native-actions-sheet';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import WebView from 'react-native-webview';
 
 const SOSGeneral = () => {
   const navigation =
@@ -47,6 +49,7 @@ const SOSGeneral = () => {
     name: userData.full_name,
     email: userData.email,
     description: '',
+    address: '',
   });
   const actionSheetRef = useRef<ActionSheetRef>(null);
 
@@ -114,7 +117,8 @@ const SOSGeneral = () => {
         long: coords.longitude,
         description: generalState.description,
         status: 1,
-        photo: images[0].base64,
+        photo: images[0]?.base64 ?? '',
+        location: generalState.address,
       })
         .then(res => {
           console.log(res);
@@ -151,159 +155,234 @@ const SOSGeneral = () => {
           />
         }
       />
-      <View
-        style={[
-          globalStyles.horizontalDefaultPadding,
-          globalStyles.verticalDefaultPadding,
-          globalStyles.displayFlex,
-        ]}>
-        <Text style={[globalStyles.headingRegular.h3]}>
-          Silahkan lengkapi data pengaduan dibawah
-        </Text>
-        <Spacer height={15} />
+      <ScrollView contentContainerStyle={globalStyles.displayFlexGrow}>
         <View
           style={[
-            globalStyles.row,
-            globalStyles.alignCenter,
-            globalStyles.horizontalDefaultPadding,
-            styles.inputContainer,
-          ]}>
-          <Ionicons name="person" size={24} color={GREY2} />
-          <Spacer width={10} />
-          <View style={globalStyles.displayFlex}>
-            <TextInput
-              placeholder="Nama Anda"
-              placeholderTextColor={GREY2}
-              value={generalState.name}
-              editable={false}
-            />
-          </View>
-        </View>
-        <Spacer height={15} />
-        <View
-          style={[
-            globalStyles.row,
-            globalStyles.alignCenter,
-            globalStyles.horizontalDefaultPadding,
-            styles.inputContainer,
-          ]}>
-          <Ionicons name="mail" size={24} color={GREY2} />
-          <Spacer width={10} />
-          <View style={globalStyles.displayFlex}>
-            <TextInput
-              placeholder="Email Anda"
-              placeholderTextColor={GREY2}
-              value={generalState.email}
-              editable={false}
-            />
-          </View>
-        </View>
-        <Spacer height={15} />
-        <View
-          style={[
-            globalStyles.row,
-            globalStyles.alignStart,
             globalStyles.horizontalDefaultPadding,
             globalStyles.verticalDefaultPadding,
-            {
-              backgroundColor: GREY1,
-              width: '100%',
-              borderRadius: 5,
-            },
+            globalStyles.displayFlex,
           ]}>
-          <Ionicons name="document-text-outline" size={24} color={GREY2} />
-
-          <Spacer width={10} />
-          <View style={[globalStyles.displayFlex]}>
-            <TextInput
-              placeholder="Deskripsi"
-              placeholderTextColor={GREY2}
-              multiline={true}
-              numberOfLines={5}
-              textAlignVertical="top"
-              style={{paddingTop: 4}}
-              onChangeText={(text: string) =>
-                setGeneralState({...generalState, description: text})
-              }
-            />
-          </View>
-        </View>
-        <Spacer height={20} />
-        <Pressable
-          onPress={() => actionSheetRef.current?.show()}
-          style={[
-            globalStyles.justifyCenter,
-            globalStyles.alignCenter,
-            {
-              width: 'auto',
-              height: 240,
-              borderRadius: 10,
-              overflow: 'hidden',
-              backgroundColor: GREY1,
-            },
-          ]}>
-          {images.length === 0 ? (
-            <>
-              <MaterialIcons name="add-a-photo" size={50} color={WHITE} />
-              <Text style={[globalStyles.headingBold.h3, {color: WHITE}]}>
-                Upload Foto
-              </Text>
-            </>
-          ) : (
-            <Image
-              //   source={require('assets/images/logo.png')}
-              source={{uri: images[0].uri}}
-              style={{
-                width: '100%',
-                height: '100%',
-                resizeMode: 'cover',
-              }}
-            />
-          )}
-        </Pressable>
-        <ActionSheet ref={actionSheetRef}>
+          <Text style={[globalStyles.headingRegular.h3]}>
+            Silahkan lengkapi data pengaduan dibawah
+          </Text>
+          <Spacer height={15} />
           <View
             style={[
+              globalStyles.row,
+              globalStyles.alignCenter,
+              globalStyles.horizontalDefaultPadding,
+              styles.inputContainer,
+            ]}>
+            <Ionicons name="person" size={24} color={GREY2} />
+            <Spacer width={10} />
+            <View style={globalStyles.displayFlex}>
+              <TextInput
+                placeholder="Nama Anda"
+                placeholderTextColor={GREY2}
+                value={generalState.name}
+                editable={false}
+              />
+            </View>
+          </View>
+          <Spacer height={15} />
+          <View
+            style={[
+              globalStyles.row,
+              globalStyles.alignCenter,
+              globalStyles.horizontalDefaultPadding,
+              styles.inputContainer,
+            ]}>
+            <Ionicons name="mail" size={24} color={GREY2} />
+            <Spacer width={10} />
+            <View style={globalStyles.displayFlex}>
+              <TextInput
+                placeholder="Email Anda"
+                placeholderTextColor={GREY2}
+                value={generalState.email}
+                editable={false}
+              />
+            </View>
+          </View>
+          <Spacer height={15} />
+          <View
+            style={[
+              globalStyles.row,
+              globalStyles.alignStart,
               globalStyles.horizontalDefaultPadding,
               globalStyles.verticalDefaultPadding,
+              {
+                backgroundColor: GREY1,
+                width: '100%',
+                borderRadius: 5,
+              },
             ]}>
-            <Text style={[globalStyles.headingBold.h3]}>
-              Pilih Gambar Dari:
-            </Text>
-            <Pressable
-              style={[globalStyles.row, globalStyles.alignCenter]}
-              onPress={_onCameraPress}>
-              <Ionicons name="camera" size={50} color={BLACK} />
-              <Spacer width={10} />
-              <Text style={[globalStyles.headingRegular.h3]}>Kamera</Text>
-            </Pressable>
-            <Spacer width={5} />
-            <Pressable
-              style={[globalStyles.row, globalStyles.alignCenter]}
-              onPress={_onGalleryPress}>
-              <Ionicons name="images" size={50} color={BLACK} />
-              <Spacer width={10} />
-              <Text style={[globalStyles.headingRegular.h3]}>Gallery</Text>
-            </Pressable>
+            <Ionicons name="document-text-outline" size={24} color={GREY2} />
+
+            <Spacer width={10} />
+            <View style={[globalStyles.displayFlex]}>
+              <TextInput
+                placeholder="Deskripsi"
+                placeholderTextColor={GREY2}
+                multiline={true}
+                numberOfLines={5}
+                textAlignVertical="top"
+                style={{paddingTop: 4}}
+                onChangeText={(text: string) =>
+                  setGeneralState({...generalState, description: text})
+                }
+              />
+            </View>
           </View>
-        </ActionSheet>
-        <Spacer height={20} />
-        <Button
-          text={
-            isLoading ? <ActivityIndicator color={WHITE} /> : 'Proses Pengaduan'
-          }
-          textColor={WHITE}
-          containerStyle={[
-            styles.btn,
-            {
-              backgroundColor:
-                generalState.description === '' ? GREY1 : PRIMARY,
-            },
-          ]}
-          onPress={_onReport}
-          disabled={generalState.description === '' || isLoading ? true : false}
-        />
-      </View>
+          <Spacer height={20} />
+          <View
+            style={[
+              globalStyles.row,
+              globalStyles.alignStart,
+              globalStyles.horizontalDefaultPadding,
+              globalStyles.verticalDefaultPadding,
+              {
+                backgroundColor: GREY1,
+                width: '100%',
+                borderRadius: 5,
+              },
+            ]}>
+            <Ionicons name="map" size={24} color={GREY2} />
+
+            <Spacer width={10} />
+            <View style={[globalStyles.displayFlex]}>
+              <TextInput
+                placeholder="Alamat Lengkap"
+                placeholderTextColor={GREY2}
+                multiline={true}
+                numberOfLines={5}
+                textAlignVertical="top"
+                style={{paddingTop: 4}}
+                onChangeText={(text: string) =>
+                  setGeneralState({...generalState, address: text})
+                }
+              />
+            </View>
+          </View>
+          <Spacer height={20} />
+
+          <WebView
+            startInLoadingState={true}
+            scalesPageToFit={true}
+            androidLayerType={'software'}
+            source={{
+              html: `<iframe src="https://maps.google.com/maps?q=${
+                coords.latitude
+              }, ${
+                coords.longitude
+              }&z=20&output=embed" frameborder="0" style="border:0; width: ${percentageWidth(
+                200,
+              )}px; height: ${percentageHeight(
+                55,
+              )}px; borderRadius:20"></iframe>`,
+              baseUrl: 'https://maps.google.com/maps',
+            }}
+            onMessage={e => console.log('onMessage', e.nativeEvent.data)}
+            style={{
+              // marginTop: 20,
+              width: percentageWidth(100),
+              height: 240,
+              borderRadius: 50,
+              overflow: 'hidden',
+              borderWidth: 5,
+              elevation: 5,
+            }}
+            onError={error => console.error('errorwebview', error)}
+          />
+          <Spacer height={20} />
+          <Pressable
+            onPress={() => actionSheetRef.current?.show()}
+            style={[
+              globalStyles.justifyCenter,
+              globalStyles.alignCenter,
+              {
+                width: 'auto',
+                height: 240,
+                borderRadius: 10,
+                overflow: 'hidden',
+                backgroundColor: GREY1,
+              },
+            ]}>
+            {images.length === 0 ? (
+              <>
+                <MaterialIcons name="add-a-photo" size={50} color={WHITE} />
+                <Text style={[globalStyles.headingBold.h3, {color: WHITE}]}>
+                  Upload Foto
+                </Text>
+              </>
+            ) : (
+              <Image
+                //   source={require('assets/images/logo.png')}
+                source={{uri: images[0].uri}}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  resizeMode: 'cover',
+                }}
+              />
+            )}
+          </Pressable>
+          <ActionSheet ref={actionSheetRef}>
+            <View
+              style={[
+                globalStyles.horizontalDefaultPadding,
+                globalStyles.verticalDefaultPadding,
+              ]}>
+              <Text style={[globalStyles.headingBold.h3]}>
+                Pilih Gambar Dari:
+              </Text>
+              <Pressable
+                style={[globalStyles.row, globalStyles.alignCenter]}
+                onPress={_onCameraPress}>
+                <Ionicons name="camera" size={50} color={BLACK} />
+                <Spacer width={10} />
+                <Text style={[globalStyles.headingRegular.h3]}>Kamera</Text>
+              </Pressable>
+              <Spacer width={5} />
+              <Pressable
+                style={[globalStyles.row, globalStyles.alignCenter]}
+                onPress={_onGalleryPress}>
+                <Ionicons name="images" size={50} color={BLACK} />
+                <Spacer width={10} />
+                <Text style={[globalStyles.headingRegular.h3]}>Gallery</Text>
+              </Pressable>
+            </View>
+          </ActionSheet>
+
+          <Spacer height={20} />
+          <Button
+            text={
+              isLoading ? (
+                <ActivityIndicator color={WHITE} />
+              ) : (
+                'Proses Pengaduan'
+              )
+            }
+            textColor={WHITE}
+            containerStyle={[
+              styles.btn,
+              {
+                backgroundColor:
+                  generalState.description === '' || generalState.address === ''
+                    ? GREY1
+                    : PRIMARY,
+              },
+            ]}
+            onPress={_onReport}
+            disabled={
+              generalState.description === '' ||
+              generalState.address === '' ||
+              isLoading
+                ? true
+                : false
+            }
+          />
+        </View>
+      </ScrollView>
     </BaseContainer>
   );
 };

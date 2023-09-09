@@ -1,17 +1,26 @@
-import {StyleSheet} from 'react-native';
 import React, {useEffect} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import {Login, Profile, Register, SOSFire, SOSGeneral, SOSPublic} from 'pages';
+import {
+  ChangePassword,
+  Login,
+  Profile,
+  Register,
+  SOSFire,
+  SOSGeneral,
+  SOSPublic,
+} from 'pages';
 import NavMainMenu from './nav_mainmenu';
 import authStore from 'store/authStore';
 import {LoadingLogo} from 'components';
 import messaging from '@react-native-firebase/messaging';
 import notifee, {AndroidImportance} from '@notifee/react-native';
+import reportStore from 'store/reportStore';
 const Stack = createStackNavigator();
 
 const Routes = () => {
   const {Navigator, Screen} = Stack;
   const {isLoggedIn, _onCheckExpired, isLoading} = authStore();
+  const {_getAllReports} = reportStore();
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -37,6 +46,7 @@ const Routes = () => {
           importance: AndroidImportance.HIGH,
         },
       });
+      _getAllReports();
     });
 
     return () => {
@@ -78,6 +88,7 @@ const Routes = () => {
         <>
           <Screen name="NavMainMenu" component={NavMainMenu} />
           <Screen name="Profile" component={Profile} />
+          <Screen name="ChangePassword" component={ChangePassword} />
           <Screen name="SOSFire" component={SOSFire} />
           <Screen name="SOSGeneral" component={SOSGeneral} />
           <Screen name="SOSPublic" component={SOSPublic} />
@@ -93,5 +104,3 @@ const Routes = () => {
 };
 
 export default Routes;
-
-const styles = StyleSheet.create({});

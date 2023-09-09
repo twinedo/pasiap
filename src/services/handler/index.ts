@@ -1,5 +1,5 @@
 import {API_MAIN} from '@env';
-import {AxiosHeaders, AxiosRequestHeaders} from 'axios';
+import {AxiosRequestHeaders} from 'axios';
 import {useAxios} from 'services/useAxios';
 
 interface IPostReportBody {
@@ -10,6 +10,8 @@ interface IPostReportBody {
   description?: string;
   status?: number;
   photo?: string;
+  location: string;
+
 }
 
 export const PostReport = async (
@@ -46,6 +48,27 @@ export const UpdateReportByStatusID = async (
       },
     });
     console.log('res update stat response', response);
+    return Promise.resolve(response);
+  } catch (error) {
+    console.error(error);
+    return Promise.reject(error);
+  }
+};
+
+export const UpdatePassword = async (
+  password: string,
+  password_confirmation: string,
+) => {
+  try {
+    const response = await useAxios({
+      url: `${API_MAIN}/password`,
+      method: 'post',
+      data: {
+        password,
+        password_confirmation,
+      },
+    });
+    console.log('res update pass response', response);
     return Promise.resolve(response);
   } catch (error) {
     console.error(error);

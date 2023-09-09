@@ -10,6 +10,7 @@ import {Alert} from 'react-native';
 import userStore from './userStore';
 import {fetchAPI} from 'services/fetch';
 import {IRegister} from 'pages/register';
+import messaging from '@react-native-firebase/messaging';
 
 interface IAuthState {
   user_id: number;
@@ -64,32 +65,39 @@ const authStore = create<IAuthStore>()(
             });
             console.log('res login', response);
             if (response?.status === 200) {
-              const token = response?.data?.token;
-              const decoded: JwtPayload & {
-                role: 'user' | 'admin' | 'satpol_pp' | 'linmas' | 'officer';
-                sub: number;
-                expires_in: number;
-              } = jwt_decode(token);
-              console.log('Decoded payload:', decoded);
-              await AsyncStorage.setItem(
-                '@pasiap_access_token',
-                response?.data?.token,
-              );
-              await AsyncStorage.setItem(
-                '@pasiap_user_id',
-                decoded.sub?.toString(),
-              );
-              userStore.getState()._getUserData();
-              set({
-                isLoading: false,
-                loginData: {
-                  token: token,
-                  user_id: decoded?.sub,
-                  role: decoded?.role,
-                  expires_in: decoded?.exp!,
-                },
-                isLoggedIn: true,
-              });
+              await messaging().registerDeviceForRemoteMessages();
+              const fcmToken = await messaging().getToken();
+              console.log('fcmToken', fcmToken);
+              if (fcmToken) {
+                userStore.getState()._onUpdateFCMToken(fcmToken);
+
+                const token = response?.data?.token;
+                const decoded: JwtPayload & {
+                  role: 'user' | 'admin' | 'satpol_pp' | 'linmas' | 'officer';
+                  sub: number;
+                  expires_in: number;
+                } = jwt_decode(token);
+                console.log('Decoded payload:', decoded);
+                await AsyncStorage.setItem(
+                  '@pasiap_access_token',
+                  response?.data?.token,
+                );
+                await AsyncStorage.setItem(
+                  '@pasiap_user_id',
+                  decoded.sub?.toString(),
+                );
+                userStore.getState()._getUserData();
+                set({
+                  isLoading: false,
+                  loginData: {
+                    token: token,
+                    user_id: decoded?.sub,
+                    role: decoded?.role,
+                    expires_in: decoded?.exp!,
+                  },
+                  isLoggedIn: true,
+                });
+              }
             } else {
               set({isLoading: false});
             }
@@ -107,6 +115,9 @@ const authStore = create<IAuthStore>()(
           }
         },
         _onLogout: () => {
+          messaging().onTokenRefresh(token => {
+            console.log('logouttoken', token);
+          });
           AsyncStorage.removeItem('@pasiap_access_token');
           // setInterceptor(false);
           // axios.interceptors.request.eject(requestInterceptor);

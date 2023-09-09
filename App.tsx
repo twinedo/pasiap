@@ -1,5 +1,4 @@
-import {StyleSheet} from 'react-native';
-import React, {useEffect} from 'react';
+import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import Routes from 'routes';
 
@@ -12,5 +11,3 @@ const App = () => {
 };
 
 export default App;
-
-const styles = StyleSheet.create({});

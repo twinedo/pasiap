@@ -1,5 +1,4 @@
 import {
-  Alert,
   Image,
   Pressable,
   StyleSheet,
@@ -8,32 +7,20 @@ import {
   View,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
-import {
-  BaseContainer,
-  Button,
-  SelectPrimary,
-  Spacer,
-  Toolbar,
-} from 'components';
+import {BaseContainer, Button, Spacer, Toolbar} from 'components';
 import {BLACK, GREY1, GREY2, PRIMARY, RED, WHITE} from 'styles/colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RoutesParam} from 'routes/types';
 import globalStyles from 'styles/globalStyles';
-import Foundation from 'react-native-vector-icons/Foundation';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Entypo from 'react-native-vector-icons/Entypo';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ActionSheet, {ActionSheetRef} from 'react-native-actions-sheet';
 import * as ImagePicker from 'react-native-image-picker';
 import {request, PERMISSIONS} from 'react-native-permissions';
-import {jenisKelamin, maritalStates, religion} from 'utils/constants';
-import DatePicker from 'react-native-date-picker';
-import {percentageHeight, percentageWidth} from 'utils/screen_size';
+import {percentageWidth} from 'utils/screen_size';
 import {ErrorMessage, Formik} from 'formik';
 import * as Yup from 'yup';
-import moment from 'moment';
 import userStore from 'store/userStore';
 
 const ProfileSchema = Yup.object().shape({
@@ -48,7 +35,7 @@ export interface IProfile {
 const Profile = () => {
   const navigation =
     useNavigation<StackNavigationProp<RoutesParam, 'Profile'>>();
-  const {userData, _getUserData, isUpdateError, _updateUserData} = userStore();
+  const {userData, _getUserData, _updateUserData} = userStore();
   const [imageProfile, setImageProfile] = useState<ImagePicker.Asset[]>([]);
   const actionSheetRef = useRef<ActionSheetRef>(null);
   const [isEdit, setIsEdit] = useState(false);
