@@ -134,6 +134,7 @@ const NavMainMenu = () => {
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Riwayat" component={History} />
       <Tab.Screen name="Informasi" component={Information} />
+
       <Tab.Screen name="Settings" component={SettingsPage} />
     </Tab.Navigator>
   );

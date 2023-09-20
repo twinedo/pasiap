@@ -2,6 +2,8 @@ import React, {useEffect} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {
   ChangePassword,
+  InformationForm,
+  InformationView,
   Login,
   Profile,
   Register,
@@ -87,6 +89,8 @@ const Routes = () => {
       {isLoggedIn ? (
         <>
           <Screen name="NavMainMenu" component={NavMainMenu} />
+          <Screen name="InformationForm" component={InformationForm} />
+          <Screen name="InformationView" component={InformationView} />
           <Screen name="Profile" component={Profile} />
           <Screen name="ChangePassword" component={ChangePassword} />
           <Screen name="SOSFire" component={SOSFire} />

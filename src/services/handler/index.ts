@@ -1,6 +1,7 @@
 import {API_MAIN} from '@env';
 import {AxiosRequestHeaders} from 'axios';
 import {useAxios} from 'services/useAxios';
+import {IInformation} from 'store/informationStore';
 
 interface IPostReportBody {
   cat_id: number;
@@ -11,7 +12,6 @@ interface IPostReportBody {
   status?: number;
   photo?: string;
   location: string;
-
 }
 
 export const PostReport = async (
@@ -69,6 +69,50 @@ export const UpdatePassword = async (
       },
     });
     console.log('res update pass response', response);
+    return Promise.resolve(response);
+  } catch (error) {
+    console.error(error);
+    return Promise.reject(error);
+  }
+};
+
+export const PostInformation = async (data: IInformation) => {
+  try {
+    const response = await useAxios({
+      url: `${API_MAIN}/articles`,
+      method: 'post',
+      data,
+    });
+    console.log('res post info', response);
+    return Promise.resolve(response);
+  } catch (error) {
+    console.error(error);
+    return Promise.reject(error);
+  }
+};
+
+export const UpdateInformation = async (data: IInformation, id: number) => {
+  try {
+    const response = await useAxios({
+      url: `${API_MAIN}/articles/${id}`,
+      method: 'put',
+      data,
+    });
+    console.log('res put info', response);
+    return Promise.resolve(response);
+  } catch (error) {
+    console.error(error);
+    return Promise.reject(error);
+  }
+};
+
+export const DeleteInformation = async (id: number) => {
+  try {
+    const response = await useAxios({
+      url: `${API_MAIN}/articles/${id}`,
+      method: 'delete',
+    });
+    console.log('res del info', response);
     return Promise.resolve(response);
   } catch (error) {
     console.error(error);

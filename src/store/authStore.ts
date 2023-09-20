@@ -69,6 +69,7 @@ const authStore = create<IAuthStore>()(
               const fcmToken = await messaging().getToken();
               console.log('fcmToken', fcmToken);
               if (fcmToken) {
+                // alert('test');
                 userStore.getState()._onUpdateFCMToken(fcmToken);
 
                 const token = response?.data?.token;

@@ -70,14 +70,21 @@ const Home = () => {
       changeStatusBar(PRIMARY);
     }, [settings.statusBarColor]),
   );
+  useFocusEffect(
+    useCallback(() => {
+      if (userData?.user_id === 0) {
+        _getUserData();
+      }
+    }, [userData?.user_id!]),
+  );
 
-  useEffect(() => {
-    if (userData?.user_id === 0) {
-      _getUserData();
-    }
+  // useEffect(() => {
+  //   if (userData?.user_id === 0) {
+  //     _getUserData();
+  //   }
 
-    return () => {};
-  }, [userData?.user_id!]);
+  //   return () => {};
+  // }, [userData?.user_id!]);
 
   useEffect(() => {
     _getCategories();

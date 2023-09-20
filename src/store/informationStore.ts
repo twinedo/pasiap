@@ -3,43 +3,47 @@ import zustandStorage from 'services/storage';
 import {useAxios} from 'services/useAxios';
 import {create} from 'zustand';
 import {createJSONStorage, devtools, persist} from 'zustand/middleware';
-import {ReactNode} from 'react';
 
-export interface ICategories {
-  id: number;
-  code: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-  icon: ReactNode;
-  navigate?: string;
+export interface IInformation {
+  title: string;
+  description: string;
+  cover?: string;
+  category: 'umum' | 'khusus';
+  is_publish: boolean;
+  created_at?: string;
+  author_id?: number;
+  author_name?: string;
+  id?: number;
+  slug?: string;
+  updated_at?: string;
+  updated_by?: number;
+  updated_name?: string;
 }
 
-interface ICategStore {
-  _getCategories: () => void;
-  categoryList: ICategories[];
+interface IInfoStore {
+  _getInformation: () => void;
+  informationList: IInformation[];
   isLoading: boolean;
   isError?: boolean;
   errorMessage?: string;
 }
 
-const categoriesStore = create<ICategStore>()(
+const informationStore = create<IInfoStore>()(
   devtools(
     persist(
       set => ({
         isLoading: false,
-        categoryList: [],
-        _getCategories: async () => {
+        informationList: [],
+        _getInformation: async () => {
           set({isLoading: true, isError: false, errorMessage: ''});
           try {
             const response = await useAxios({
-              url: `${API_MAIN}/categories`,
+              url: `${API_MAIN}/articles`,
               method: 'get',
-              isAuth: true,
             });
-            console.log('resCateg', response);
+            console.log('resInfo', response);
 
-            set({isLoading: false, categoryList: response?.data?.data});
+            set({isLoading: false, informationList: response?.data?.data});
           } catch (error) {
             set({
               isLoading: false,
@@ -50,11 +54,11 @@ const categoriesStore = create<ICategStore>()(
         },
       }),
       {
-        name: '@categState-pasiap',
+        name: '@infoState-pasiap',
         storage: createJSONStorage(() => zustandStorage),
       },
     ),
   ),
 );
 
-export default categoriesStore;
+export default informationStore;

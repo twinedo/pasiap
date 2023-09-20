@@ -1,10 +1,13 @@
 import {ReactNode} from 'react';
+import {IInformation} from 'store/informationStore';
 
 export type RoutesParam = {
   ChangePassword: undefined;
   Home: undefined;
   History: undefined;
   Information: undefined;
+  InformationForm?: {params: 'add' | 'update'; data?: IInformation};
+  InformationView: {data: IInformation};
   Login: undefined;
   Profile: undefined;
   Register: undefined;

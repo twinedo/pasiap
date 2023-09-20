@@ -1,6 +1,8 @@
 import Home from './home';
 import History from './history';
 import Information from './information';
+import InformationForm from './information_form';
+import InformationView from './information_view';
 import Login from './login';
 import Profile from './profile';
 import Register from './register';
@@ -15,6 +17,8 @@ export {
   Home,
   History,
   Information,
+  InformationForm,
+  InformationView,
   Login,
   Profile,
   Register,
