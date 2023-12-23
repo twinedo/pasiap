@@ -198,6 +198,9 @@ const Login = () => {
               </>
             )}
           </Formik>
+          <Text style={[globalStyles.headingBold.h2, {color: PRIMARY}]}>
+            developed by: twinedo
+          </Text>
         </View>
       </View>
     </BaseContainer>

@@ -93,7 +93,7 @@ const authStore = create<IAuthStore>()(
                   loginData: {
                     token: token,
                     user_id: decoded?.sub,
-                    role: decoded?.role,
+                    role: decoded?.role!,
                     expires_in: decoded?.exp!,
                   },
                   isLoggedIn: true,
@@ -132,18 +132,57 @@ const authStore = create<IAuthStore>()(
         _onCheckExpired: async () => {
           set({isLoading: true});
           const token = get().loginData?.token!;
-          // console.log('wtf token', token);
           var decoded: JwtPayload = jwt_decode(token);
           var exp = decoded.exp;
           var now = new Date().getTime() / 1000;
           if (exp < now) {
-            Alert.alert(
-              'Perhatian',
-              'Sesi login telah berakhir. Silahkan Login kembali',
-            );
-            get()._onLogout();
+            const refreshResponse = await fetchAPI({
+              url: `${API_MAIN}/refresh`,
+              method: 'post',
+              data: {
+                token,
+              },
+            });
+            console.log('reffresh res', refreshResponse);
+            if (refreshResponse?.status === 200) {
+              const token = refreshResponse?.data?.token;
+              const decoded: JwtPayload & {
+                role: 'user' | 'admin' | 'satpol_pp' | 'linmas' | 'officer';
+                sub: number;
+                expires_in: number;
+              } = jwt_decode(token);
+              console.log('Decoded payload:', decoded);
+              await AsyncStorage.setItem(
+                '@pasiap_access_token',
+                refreshResponse?.data?.token,
+              );
+              await AsyncStorage.setItem(
+                '@pasiap_user_id',
+                decoded.sub?.toString(),
+              );
+
+              set({
+                isLoading: false,
+                loginData: {
+                  token: token,
+                  user_id: decoded?.sub,
+                  role: decoded?.role!,
+                  expires_in: decoded?.exp!,
+                },
+                isLoggedIn: true,
+              });
+            } else {
+              set({isLoading: false, isLoggedIn: true});
+              setTimeout(() => {
+                userStore.getState()._getUserData();
+              }, 500);
+            }
+          } else {
+            set({isLoading: false, isLoggedIn: true});
+            setTimeout(() => {
+              userStore.getState()._getUserData();
+            }, 500);
           }
-          set({isLoading: false});
         },
         _onRegister: async (
           values: IRegister,

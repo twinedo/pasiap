@@ -73,39 +73,39 @@ const applyInterceptor = instance.interceptors.request.use(
   },
 );
 
-instance.interceptors.response.use(
-  async (response: AxiosResponse) => {
-    return response;
-  },
-  async (error: AxiosError) => {
-    if (
-      axios.isAxiosError(error) &&
-      error.response &&
-      error.response.status === 401
-    ) {
-      try {
-        const token = await AsyncStorage.getItem('@pasiap_access_token');
-        console.log('token interceptor', token);
-        const refreshResponse = await fetchAPI({
-          url: `${API_MAIN}/refresh`,
-          method: 'post',
-          data: {
-            token,
-          },
-        });
-        console.log('reffresh res', refreshResponse);
-        // var token =
-        //   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3JvbGUiOiJPcGVyYXRvciIsImF1ZCI6WyJhbGxzdG9yZSJdLCJjb21wYW55X2lkIjoiVEstVFJTQ01QLTIwMTkxMDA5MTgzNDUwMDAwMDAwMSIsInVzZXJfaWQiOiJUSy1UUlNVU1ItMjAxOTEwMDkxOTAwMTAwMDAwMDA1IiwidXNlcl9uYW1lIjoiaGFsc2V5LmdyYW5kZUBnbWFpbC5jb20iLCJzY29wZSI6WyJyZWFkIiwid3JpdGUiXSwiY29tcGFueV9uYW1lIjoiUFQuIEZhbGxpbiBVbml0ZWQiLCJleHAiOjE1ODY0MTE3ODIsImF1dGhvcml0aWVzIjpbIlRyYW5zcG9ydGVyIl0sImp0aSI6IjUwMjhjYjExLTJmMzMtNDY2ZC04MjcwLTBhNjU2MzI1NDk4ZiIsImNsaWVudF9pZCI6InRydWNraW5nY2xpZW50In0.HHgCLYM8J1CywoM09A7i2ur1vL7zLMmLAxHbE1aEsQI';
-        AsyncStorage.setItem(
-          '@pasiap_access_token',
-          refreshResponse?.data?.token,
-        );
-      } catch (err) {
-        console.error('Error in token refresh res2:', err);
-      }
-    }
-  },
-);
+// instance.interceptors.response.use(
+//   async (response: AxiosResponse) => {
+//     return response;
+//   },
+//   async (error: AxiosError) => {
+//     if (
+//       axios.isAxiosError(error) &&
+//       error.response &&
+//       error.response.status === 401
+//     ) {
+//       try {
+//         const token = await AsyncStorage.getItem('@pasiap_access_token');
+//         console.log('token interceptor', token);
+//         const refreshResponse = await fetchAPI({
+//           url: `${API_MAIN}/refresh`,
+//           method: 'post',
+//           data: {
+//             token,
+//           },
+//         });
+//         console.log('reffresh res', refreshResponse);
+//         // var token =
+//         //   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3JvbGUiOiJPcGVyYXRvciIsImF1ZCI6WyJhbGxzdG9yZSJdLCJjb21wYW55X2lkIjoiVEstVFJTQ01QLTIwMTkxMDA5MTgzNDUwMDAwMDAwMSIsInVzZXJfaWQiOiJUSy1UUlNVU1ItMjAxOTEwMDkxOTAwMTAwMDAwMDA1IiwidXNlcl9uYW1lIjoiaGFsc2V5LmdyYW5kZUBnbWFpbC5jb20iLCJzY29wZSI6WyJyZWFkIiwid3JpdGUiXSwiY29tcGFueV9uYW1lIjoiUFQuIEZhbGxpbiBVbml0ZWQiLCJleHAiOjE1ODY0MTE3ODIsImF1dGhvcml0aWVzIjpbIlRyYW5zcG9ydGVyIl0sImp0aSI6IjUwMjhjYjExLTJmMzMtNDY2ZC04MjcwLTBhNjU2MzI1NDk4ZiIsImNsaWVudF9pZCI6InRydWNraW5nY2xpZW50In0.HHgCLYM8J1CywoM09A7i2ur1vL7zLMmLAxHbE1aEsQI';
+//         AsyncStorage.setItem(
+//           '@pasiap_access_token',
+//           refreshResponse?.data?.token,
+//         );
+//       } catch (err) {
+//         console.error('Error in token refresh res2:', err);
+//       }
+//     }
+//   },
+// );
 
 export const useAxios = async (props: configProps) => {
   const {
