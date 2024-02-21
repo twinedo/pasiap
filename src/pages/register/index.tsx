@@ -30,8 +30,6 @@ import {request, PERMISSIONS} from 'react-native-permissions';
 import {jenisKelamin, maritalStates, religion} from 'utils/constants';
 import DatePicker from 'react-native-date-picker';
 import moment from 'moment';
-import {useAxios} from 'services/useAxios';
-import {API_MAIN} from '@env';
 import authStore from 'store/authStore';
 
 const RegisterSchema = Yup.object().shape({
@@ -43,7 +41,8 @@ const RegisterSchema = Yup.object().shape({
   email: Yup.string().email('Email tidak valid').required('Email harus diisi'),
   nik: Yup.string()
     .required('NIK is required')
-    .min(16, 'NIK is 16 characters long'),
+    .min(16, 'NIK must be 16 characters long')
+    .max(16, 'NIK must be 16 characters long'),
   fullName: Yup.string().required('Fullname is required'),
   placeBirth: Yup.string().required('PlaceBirth is required'),
   birthDate: Yup.string().required('BirthDate is required'),
