@@ -115,6 +115,9 @@ const createdStyles = StyleSheet.create({
   subtitle: {
     fontSize: 12,
   },
+  relative: {
+    position: 'relative',
+  },
   h5: {
     fontSize: 24,
   },
@@ -129,6 +132,15 @@ const createdStyles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+  },
+  rowGap: {
+    rowGap: 8,
+  },
+  columnGap: {
+    columnGap: 8,
+  },
+  gap: {
+    gap: 8,
   },
   atBottom: {
     bottom: 0,

@@ -139,7 +139,11 @@ const Register = () => {
   const _onSubmitRegister = async (
     values: IRegister & {identity_card_photo: string; photo: string},
   ) => {
-    _onRegister(values, imageKTP[0]?.base64!, imageProfile[0]?.base64!);
+    if (imageKTP.length === 0 || imageProfile.length === 0) {
+      Alert.alert('Error', 'Silahkan masukkan Foto pada kolom yang tersedia');
+    } else {
+      _onRegister(values, imageKTP[0]?.base64!, imageProfile[0]?.base64!);
+    }
   };
 
   return (
@@ -243,6 +247,7 @@ const Register = () => {
                       onChangeText={handleChange('username')}
                       onBlur={handleBlur('username')}
                       value={values.username}
+                      style={{color: BLACK}}
                     />
                   </View>
                 </View>
@@ -274,6 +279,7 @@ const Register = () => {
                       onBlur={handleBlur('password')}
                       value={values.password}
                       secureTextEntry
+                      style={{color: BLACK}}
                     />
                   </View>
                 </View>
@@ -305,6 +311,7 @@ const Register = () => {
                       onBlur={handleBlur('passwordConf')}
                       value={values.passwordConf}
                       secureTextEntry
+                      style={{color: BLACK}}
                     />
                   </View>
                 </View>
@@ -336,6 +343,7 @@ const Register = () => {
                       onChangeText={handleChange('email')}
                       onBlur={handleBlur('email')}
                       value={values.email}
+                      style={{color: BLACK}}
                     />
                   </View>
                 </View>
@@ -372,6 +380,7 @@ const Register = () => {
                       onBlur={handleBlur('nik')}
                       value={values.nik}
                       keyboardType="decimal-pad"
+                      style={{color: BLACK}}
                     />
                   </View>
                 </View>
@@ -402,6 +411,7 @@ const Register = () => {
                       onChangeText={handleChange('fullName')}
                       onBlur={handleBlur('fullName')}
                       value={values.fullName}
+                      style={{color: BLACK}}
                     />
                   </View>
                 </View>
@@ -432,6 +442,7 @@ const Register = () => {
                       onChangeText={handleChange('placeBirth')}
                       onBlur={handleBlur('placeBirth')}
                       value={values.placeBirth}
+                      style={{color: BLACK}}
                     />
                   </View>
                 </View>
@@ -467,6 +478,7 @@ const Register = () => {
                       onPressIn={() => setOpen(true)}
                       onBlur={handleBlur('birthDate')}
                       value={values.birthDate}
+                      style={{color: BLACK}}
                     />
                   </View>
                 </View>
@@ -494,30 +506,6 @@ const Register = () => {
                   </Text>
                 ) : null}
                 <Spacer height={20} />
-                {/* <View
-                  style={[
-                    globalStyles.row,
-                    globalStyles.alignCenter,
-                    globalStyles.horizontalDefaultPadding,
-                    {
-                      backgroundColor: GREY1,
-                      width: '100%',
-                      height: 40,
-                      borderRadius: 5,
-                    },
-                  ]}>
-                  <Ionicons name="people-outline" size={24} color={GREY2} />
-                  <Spacer width={10} />
-                  <View style={globalStyles.displayFlex}>
-                    <TextInput
-                      placeholder="Jenis Kelamin"
-                      placeholderTextColor={GREY2}
-                      onChangeText={handleChange('gender')}
-                      onBlur={handleBlur('gender')}
-                      value={values.gender}
-                    />
-                  </View>
-                </View> */}
                 <SelectPrimary
                   defaultButtonText="Jenis Kelamin"
                   data={jenisKelamin}
@@ -536,25 +524,7 @@ const Register = () => {
                   </Text>
                 ) : null}
                 <Spacer height={20} />
-                {/* <View
-                  style={[
-                    globalStyles.row,
-                    globalStyles.alignCenter,
-                    globalStyles.horizontalDefaultPadding,
-                    {
-                      backgroundColor: GREY1,
-                      width: '100%',
-                      height: 40,
-                      borderRadius: 5,
-                    },
-                  ]}>
-                  <MaterialCommunityIcons
-                    name="hands-pray"
-                    size={24}
-                    color={GREY2}
-                  />
 
-                </View> */}
                 <SelectPrimary
                   defaultButtonText="Agama"
                   data={religion}
@@ -649,6 +619,7 @@ const Register = () => {
                       onBlur={handleBlur('phone')}
                       value={values.phone}
                       keyboardType="phone-pad"
+                      style={{color: BLACK}}
                     />
                   </View>
                 </View>
@@ -689,7 +660,7 @@ const Register = () => {
                   ) : (
                     <Image
                       //   source={require('assets/images/logo.png')}
-                      source={{uri: imageKTP[0].uri}}
+                      source={{uri: imageKTP[imageKTP.length - 1].uri}}
                       style={{
                         width: '100%',
                         height: 150,
@@ -730,7 +701,7 @@ const Register = () => {
                   ) : (
                     <Image
                       //   source={require('assets/images/logo.png')}
-                      source={{uri: imageProfile[0].uri}}
+                      source={{uri: imageProfile[imageProfile.length - 1].uri}}
                       style={{
                         width: '100%',
                         height: 150,

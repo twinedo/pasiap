@@ -104,7 +104,7 @@ const authStore = create<IAuthStore>()(
             }
           } catch (error: any) {
             console.error('error login', error);
-            Alert.alert('Gagal', error?.data?.message);
+            Alert.alert('Gagal', error?.data?.message?.toString());
             set({
               isLoading: false,
               isLoggedIn: false,

@@ -6,8 +6,9 @@ import globalStyles from 'styles/globalStyles';
 import {BLACK, GREY1, GREY2, PRIMARY, WHITE} from 'styles/colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {Spacer} from 'components';
+import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 
-const Tab = createBottomTabNavigator();
+const Tab = createMaterialTopTabNavigator();
 
 function MyTabBar({state, descriptors, navigation}: any) {
   const focusedOptions = descriptors[state.routes[state.index].key].options;
@@ -124,11 +125,7 @@ function MyTabBar({state, descriptors, navigation}: any) {
 const NavMainMenu = () => {
   return (
     <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-
-        headerBackgroundContainerStyle: {backgroundColor: 'red'},
-      }}
+      tabBarPosition="bottom"
       initialRouteName="Home"
       tabBar={props => <MyTabBar {...props} />}>
       <Tab.Screen name="Home" component={Home} />
