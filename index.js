@@ -7,8 +7,7 @@ import App from './App';
 import {name as appName} from './app.json';
 import {PermissionsAndroid} from 'react-native';
 import messaging from '@react-native-firebase/messaging';
-import {onMessageReceived} from 'utils/fun';
-import notifee, {AndroidImportance, AndroidStyle} from '@notifee/react-native';
+import notifee, {AndroidImportance} from '@notifee/react-native';
 import 'react-native-gesture-handler';
 const isHermes = () => !!global.HermesInternal;
 PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
@@ -29,6 +28,6 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
       importance: AndroidImportance.HIGH,
     },
   });
-  onMessageReceived(remoteMessage);
+  // onMessageReceived(remoteMessage);
 });
 AppRegistry.registerComponent(appName, () => App);

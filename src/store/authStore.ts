@@ -214,7 +214,10 @@ const authStore = create<IAuthStore>()(
 
             console.log('response regis', response);
             if (response?.status === 201) {
-              Alert.alert('Berhasil', 'Anda berhasil mendaftar Akun');
+              Alert.alert(
+                'Berhasil',
+                'Anda berhasil mendaftar Akun. Silahkan cek email untuk verifikasi akun',
+              );
             }
           } catch (error) {
             console.error('error', error);

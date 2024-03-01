@@ -85,6 +85,8 @@ export type TInputListProps<T = Record<string, any>> = {
     | 'DD-MMM-YYYY'
     | 'DD/MMM/YYYY'
     | string;
+  ListHeaderComponent?: React.ReactNode;
+  ListFooterComponent?: React.ReactNode;
 };
 
 export default function InputList(props: TInputListProps<IFormField>) {
@@ -102,6 +104,8 @@ export default function InputList(props: TInputListProps<IFormField>) {
     selectDropdownKeyValue,
     dateTimePickerProps,
     formatDate = 'DD-MM-YYYY',
+    ListHeaderComponent,
+    ListFooterComponent,
   } = props;
   const [formList] = useState<IFormType[]>(form);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -131,6 +135,7 @@ export default function InputList(props: TInputListProps<IFormField>) {
           setFieldValue,
         }) => (
           <View>
+            {ListHeaderComponent}
             {formList.map((o: IFormType) => (
               <View
                 key={o.id.toString()}
@@ -331,6 +336,7 @@ export default function InputList(props: TInputListProps<IFormField>) {
                 ) : null}
               </View>
             ))}
+            {ListFooterComponent}
             {submitComponent(handleSubmit)}
           </View>
         )}

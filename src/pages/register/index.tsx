@@ -138,7 +138,9 @@ const Register = () => {
   const _onSubmitRegister = async (
     values: IRegister & {identity_card_photo: string; photo: string},
   ) => {
-    if (imageKTP.length === 0 || imageProfile.length === 0) {
+    if (values.passwordConf !== values.password) {
+      Alert.alert('Error', 'Password dan Password confirmation harus sama');
+    } else if (imageKTP.length === 0 || imageProfile.length === 0) {
       Alert.alert('Error', 'Silahkan masukkan Foto pada kolom yang tersedia');
     } else {
       _onRegister(values, imageKTP[0]?.base64!, imageProfile[0]?.base64!);
@@ -668,6 +670,9 @@ const Register = () => {
                     />
                   )}
                 </Pressable>
+                <Text style={[globalStyles.bodyBlack.h3, {color: BLACK}]}>
+                  *Max size (3mb)
+                </Text>
                 <Spacer height={20} />
                 <Pressable
                   onPress={() => {
@@ -709,6 +714,9 @@ const Register = () => {
                     />
                   )}
                 </Pressable>
+                <Text style={[globalStyles.bodyBlack.h3, {color: BLACK}]}>
+                  *Max size (3mb)
+                </Text>
                 <Spacer height={30} />
                 <ActionSheet ref={actionSheetRef}>
                   <View
