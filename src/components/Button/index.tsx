@@ -1,10 +1,11 @@
 import {
-  Pressable,
   StyleSheet,
   Text,
   TextStyle,
   ViewStyle,
   PressableProps,
+  TouchableOpacity,
+  TouchableOpacityProps,
 } from 'react-native';
 import React, {ReactNode} from 'react';
 import PropTypes from 'prop-types';
@@ -18,20 +19,20 @@ type IButtonProps = {
   onPress?: () => void;
   textColor?: string;
   textStyle?: TextStyle | TextStyle[];
-} & PressableProps;
+} & TouchableOpacityProps;
 
 const Button = (props: IButtonProps & PressableProps) => {
   const {text, textStyle, prefix, postfix, containerStyle, onPress, textColor} =
     props;
   return (
-    <Pressable
+    <TouchableOpacity
       {...props}
       style={[styles.container, containerStyle]}
       onPress={onPress}>
       {prefix}
       <Text style={[styles.text, textStyle, {color: textColor}]}>{text}</Text>
       {postfix}
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

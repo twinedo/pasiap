@@ -4,17 +4,14 @@ import {
   View,
   Pressable,
   Image,
-  TextInput,
-  Alert,
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import globalStyles from 'styles/globalStyles';
-import {BaseContainer, Button, SelectPrimary, Spacer} from 'components';
-import {BLACK, GREY1, GREY2, PRIMARY, RED, WHITE} from 'styles/colors';
+import {BaseContainer, Button, Spacer} from 'components';
+import {BLACK, GREY1, GREY2, PRIMARY, WHITE} from 'styles/colors';
 import {percentageHeight, percentageWidth} from 'utils/screen_size';
-import {ErrorMessage, Formik} from 'formik';
 import * as Yup from 'yup';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Foundation from 'react-native-vector-icons/Foundation';
@@ -28,8 +25,6 @@ import ActionSheet, {ActionSheetRef} from 'react-native-actions-sheet';
 import * as ImagePicker from 'react-native-image-picker';
 import {request, PERMISSIONS} from 'react-native-permissions';
 import {jenisKelamin, maritalStates, religion} from 'utils/constants';
-import DatePicker from 'react-native-date-picker';
-import moment from 'moment';
 import authStore from 'store/authStore';
 import InputList, {IFormType} from 'components/input-list';
 
@@ -257,32 +252,20 @@ const Register = () => {
     }
   };
 
-  console.log('imagesKTP', imageKTP);
-  console.log('imageProfile', imageProfile);
-
-  // const _onSubmitRegister = async (
-  //   values: IRegister & {identity_card_photo: string; photo: string},
-  // ) => {
-  //   if (values.passwordConf !== values.password) {
-  //     Alert.alert('Error', 'Password dan Password confirmation harus sama');
-  //   } else if (imageKTP.length === 0 || imageProfile.length === 0) {
-  //     Alert.alert('Error', 'Silahkan masukkan Foto pada kolom yang tersedia');
-  //   } else {
-  //     _onRegister(values, imageKTP[0]?.base64!, imageProfile[0]?.base64!);
-  //   }
-  // };
-
   return (
     <BaseContainer scrollable>
       <StatusBar backgroundColor={WHITE} barStyle="dark-content" />
-      <View style={[globalStyles.displayFlex, {backgroundColor: PRIMARY}]}>
+      <View
+        style={[
+          globalStyles.displayFlex,
+          {height: percentageHeight(175), backgroundColor: PRIMARY},
+        ]}>
         <View
           style={[
             globalStyles.justifyCenter,
             globalStyles.alignCenter,
             {
               height: percentageHeight(50),
-              //   position: 'absolute',
               backgroundColor: WHITE,
               borderBottomLeftRadius: 50,
               borderBottomRightRadius: 50,
@@ -292,9 +275,9 @@ const Register = () => {
         <View
           style={[
             {
-              //   position: 'absolute',
               top: -percentageHeight(40),
               width: percentageWidth(80),
+
               backgroundColor: WHITE,
               borderWidth: 1,
               borderRadius: 10,
@@ -303,7 +286,6 @@ const Register = () => {
             globalStyles.horizontalDefaultPadding,
             globalStyles.verticalDefaultPadding,
           ]}>
-          {/* <ScrollView> */}
           <Text
             style={[
               globalStyles.headingBlack.h3,

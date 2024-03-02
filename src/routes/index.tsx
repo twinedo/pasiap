@@ -17,6 +17,7 @@ import {LoadingLogo} from 'components';
 import messaging from '@react-native-firebase/messaging';
 import notifee, {AndroidImportance} from '@notifee/react-native';
 import reportStore from 'store/reportStore';
+import {onMessageReceived} from 'utils/fun';
 const Stack = createStackNavigator();
 
 const Routes = () => {
@@ -33,7 +34,6 @@ const Routes = () => {
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       console.log('remoteMessage', remoteMessage);
-      // onMessageReceived(remoteMessage);
       const channelId = await notifee.createChannel({
         id: 'default foreground',
         name: 'Background Channel',

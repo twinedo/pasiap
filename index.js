@@ -28,6 +28,5 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
       importance: AndroidImportance.HIGH,
     },
   });
-  // onMessageReceived(remoteMessage);
 });
 AppRegistry.registerComponent(appName, () => App);
