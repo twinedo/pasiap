@@ -57,6 +57,7 @@ const Login = () => {
       type: 'default',
       inputType: 'password',
       options: [],
+      secureTextEntry: false,
       prefix: <Foundation name="key" size={24} color={GREY2} />,
     },
   ]);

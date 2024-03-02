@@ -64,20 +64,21 @@ export type IFormType<T = Record<any, any>> = {
   prefix?: React.ReactNode;
   postfix?: React.ReactNode;
   options: string[] | object[];
+  selectDropdownTextKey?: string | null;
+  selectDropdownValueKey?: string | null;
 } & IInputProps;
 
 export type TInputListProps<T = Record<string, any>> = {
   form: IFormType<T>[];
   initialValues: IFormField<T>;
   containerStyle?: ViewStyle | ViewStyle[];
-  containerInputStyle?: ViewStyle | ViewStyle[];
+  containerInputStyle?: IInputProps['containerStyle'];
   titleStyle?: TextStyle | TextStyle[];
   inputProps?: IInputProps;
   submitComponent: (handleSubmit: () => void) => React.ReactNode;
   validationSchema?: any;
   onSubmit: (values: any) => void;
   selectDropdownProps?: SelectDropdownProps;
-  selectDropdownKeyValue?: string | '';
   dateTimePickerProps?: DateTimePickerProps;
   formatDate?:
     | 'DD-MM-YYYY'
@@ -94,30 +95,36 @@ export default function InputList(props: TInputListProps<IFormField>) {
     form,
     initialValues,
     containerStyle,
-    containerInputStyle,
     titleStyle,
     inputProps,
     validationSchema,
     submitComponent,
     onSubmit,
     selectDropdownProps,
-    selectDropdownKeyValue,
     dateTimePickerProps,
     formatDate = 'DD-MM-YYYY',
     ListHeaderComponent,
     ListFooterComponent,
   } = props;
-  const [formList] = useState<IFormType[]>(form);
+  const [formList, setFormList] = useState<IFormType[]>(form);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   const hideDatePicker = () => {
     setDatePickerVisibility(false);
   };
 
-  const [isSwitch, setIsSwitch] = useState(false);
-  const toggleSwitch = () => setIsSwitch(previousState => !previousState);
+  // const toggleSwitch = (index: number) => {
+  //   const dat = [...formList];
+  //   dat[index].value = !dat[index].value;
+  //   setFormList(dat);
+  // };
 
-  const [isShowPassword, setIsShowPassword] = useState(false);
+  // Function to toggle password visibility
+  const togglePasswordVisibility = (index: number) => {
+    const dat = [...formList];
+    dat[index].secureTextEntry = !dat[index].secureTextEntry;
+    setFormList(dat);
+  };
 
   return (
     <View>
@@ -136,7 +143,7 @@ export default function InputList(props: TInputListProps<IFormField>) {
         }) => (
           <View>
             {ListHeaderComponent}
-            {formList.map((o: IFormType) => (
+            {formList.map((o: IFormType, i: number) => (
               <View
                 key={o.id.toString()}
                 style={[
@@ -159,21 +166,20 @@ export default function InputList(props: TInputListProps<IFormField>) {
                     onChangeText={handleChange(o.name)}
                     onBlur={handleBlur(o.name) || (() => {})}
                     value={values[o.name].toString()}
-                    containerStyle={[
-                      styles.container,
-                      {...containerInputStyle},
-                    ]}
+                    containerStyle={styles.container}
                     keyboardType={o.type}
                     secureTextEntry={
-                      o.inputType === 'password' ? !isShowPassword : false
+                      o.inputType === 'password' ? !o.secureTextEntry : false
                     }
                     prefix={o.prefix}
                     postfix={
                       o.inputType === 'password' ? (
                         <Ionicons
-                          name={!isShowPassword ? 'eye' : 'eye-off'}
+                          name={!o.secureTextEntry ? 'eye' : 'eye-off'}
                           size={24}
-                          onPress={() => setIsShowPassword(!isShowPassword)}
+                          onPress={() => {
+                            togglePasswordVisibility(i);
+                          }}
                         />
                       ) : (
                         o.postfix
@@ -193,10 +199,7 @@ export default function InputList(props: TInputListProps<IFormField>) {
                     postfix={o.postfix}
                     multiline={o.multiline}
                     numberOfLines={o.numberOfLines}
-                    containerStyle={[
-                      styles.container,
-                      {...containerInputStyle},
-                    ]}
+                    containerStyle={styles.container}
                     style={styles.textAreaStyle}
                     {...inputProps}
                   />
@@ -210,19 +213,18 @@ export default function InputList(props: TInputListProps<IFormField>) {
                       onBlur={handleBlur(o.name) || (() => {})}
                       onFocus={() => setDatePickerVisibility(true)}
                       value={values[o.name].toString()}
-                      containerStyle={[
-                        styles.container,
-                        {...containerInputStyle},
-                      ]}
+                      containerStyle={styles.container}
                       keyboardType={o.type}
                       secureTextEntry={o.secureTextEntry}
                       prefix={o.prefix}
                       postfix={
-                        <AntDesign
-                          name="calendar"
-                          size={24}
-                          onPress={() => setDatePickerVisibility(true)}
-                        />
+                        o.postfix !== undefined && (
+                          <AntDesign
+                            name="calendar"
+                            size={24}
+                            onPress={() => setDatePickerVisibility(true)}
+                          />
+                        )
                       }
                       {...inputProps}
                     />
@@ -242,28 +244,37 @@ export default function InputList(props: TInputListProps<IFormField>) {
                 {(o.inputType === 'picker' || o.inputType === 'select') && (
                   <SelectDropdown
                     data={o.options}
-                    onSelect={(selectedItem, i) => {
-                      console.log(selectedItem, i);
+                    onSelect={(selectedItem, idx) => {
+                      console.log(selectedItem, idx);
+                      if (typeof selectedItem === 'object') {
+                        handleChange(o.name)(
+                          selectedItem[o.selectDropdownValueKey!].toString(),
+                        );
+                      } else {
+                        handleChange(o.name)(selectedItem);
+                      }
                     }}
                     buttonStyle={[
                       styles.btnStyle,
                       selectDropdownProps?.buttonStyle,
                     ]}
                     buttonTextStyle={styles.btnTextStyle}
-                    renderDropdownIcon={() => (
-                      <Ionicons name="chevron-down" size={24} />
-                    )}
-                    defaultButtonText="Select"
+                    renderDropdownIcon={() =>
+                      // <Ionicons name="chevron-down" size={24} />
+                      o.prefix
+                    }
+                    dropdownIconPosition="left"
+                    defaultButtonText={o.placeholder}
                     buttonTextAfterSelection={selectedItem => {
                       if (typeof selectedItem === 'object') {
-                        return selectedItem[selectDropdownKeyValue!];
+                        return selectedItem[o.selectDropdownTextKey!];
                       } else {
                         return selectedItem;
                       }
                     }}
                     rowTextForSelection={item => {
                       if (typeof item === 'object') {
-                        return item[selectDropdownKeyValue!];
+                        return item[o.selectDropdownTextKey!];
                       } else {
                         return item;
                       }
@@ -308,10 +319,10 @@ export default function InputList(props: TInputListProps<IFormField>) {
                     thumbColor={values[o.name] ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
                     onValueChange={() => {
-                      toggleSwitch();
+                      // toggleSwitch();
                       setFieldValue(o.name as string, !values[o.name]);
                     }}
-                    value={isSwitch}
+                    value={values[o.name] as boolean}
                   />
                 )}
                 {o.inputType === 'counter' && (
@@ -329,7 +340,8 @@ export default function InputList(props: TInputListProps<IFormField>) {
                       globalStyles.columnGap,
                     ]}>
                     <Foundation name="info" color="red" size={24} />
-                    <Text style={[globalStyles.headingRegular.h3]}>
+                    <Text
+                      style={[globalStyles.headingRegular.h3, {color: 'red'}]}>
                       {errors[o.name]!.toString()}
                     </Text>
                   </View>
@@ -348,17 +360,17 @@ export default function InputList(props: TInputListProps<IFormField>) {
 const styles = StyleSheet.create({
   container: {backgroundColor: GREY1, borderWidth: 0},
   btnStyle: {
-    borderWidth: 1,
     borderRadius: 5,
     justifyContent: 'flex-start',
-    borderColor: GREY8,
     width: '100%',
-    backgroundColor: 'transparent',
+    backgroundColor: GREY1,
   },
   btnTextStyle: {
     textAlign: 'left',
     marginHorizontal: 0,
     color: GREY8,
+    marginLeft: 16,
+    fontSize: 14,
   },
   textAreaStyle: {textAlignVertical: 'top'},
 });

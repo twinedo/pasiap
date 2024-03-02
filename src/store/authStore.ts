@@ -219,6 +219,9 @@ const authStore = create<IAuthStore>()(
                 'Anda berhasil mendaftar Akun. Silahkan cek email untuk verifikasi akun',
               );
             }
+            if (response === undefined) {
+              Alert.alert('Gagal', 'Silahkan cek form kembali');
+            }
           } catch (error) {
             console.error('error', error);
             Alert.alert(
