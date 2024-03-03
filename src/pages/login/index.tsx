@@ -130,6 +130,15 @@ const Login = () => {
                 password: values.password,
               });
             }}
+            ListFooterComponent={
+              <View style={[globalStyles.alignEnd]}>
+                <Text
+                  onPress={() => navigation.navigate('ForgotPassword')}
+                  style={[globalStyles.headingRegular.h3, {color: GREY2}]}>
+                  Lupa Password ?
+                </Text>
+              </View>
+            }
             submitComponent={handleSubmit => (
               <>
                 <Spacer height={20} />

@@ -1,5 +1,6 @@
 import {API_MAIN} from '@env';
 import {AxiosRequestHeaders} from 'axios';
+import {fetchAPI} from 'services/fetch';
 import {useAxios} from 'services/useAxios';
 import {IInformation} from 'store/informationStore';
 
@@ -116,6 +117,19 @@ export const DeleteInformation = async (id: number) => {
     return Promise.resolve(response);
   } catch (error) {
     console.error(error);
+    return Promise.reject(error);
+  }
+};
+
+export const ResetPassword = async (email: string) => {
+  try {
+    const response = await fetchAPI({
+      method: 'post',
+      url: `${API_MAIN}/password/request/reset`,
+      data: {email},
+    });
+    return Promise.resolve(response?.data);
+  } catch (error) {
     return Promise.reject(error);
   }
 };

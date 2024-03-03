@@ -1,3 +1,5 @@
+import ChangePassword from './change_password';
+import ForgotPassword from './forgot_password';
 import Home from './home';
 import History from './history';
 import Information from './information';
@@ -10,10 +12,10 @@ import SettingsPage from './settings_page';
 import SOSFire from './sos_fire';
 import SOSGeneral from './sos_general';
 import SOSPublic from './sos_public';
-import ChangePassword from './change_password';
 
 export {
   ChangePassword,
+  ForgotPassword,
   Home,
   History,
   Information,

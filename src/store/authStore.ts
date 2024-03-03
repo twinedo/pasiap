@@ -1,7 +1,6 @@
 import {API_MAIN} from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import zustandStorage from 'services/storage';
-import {useAxios} from 'services/useAxios';
 import {create} from 'zustand';
 import {createJSONStorage, devtools, persist} from 'zustand/middleware';
 import jwt_decode, {JwtPayload} from 'jwt-decode';
@@ -211,7 +210,6 @@ const authStore = create<IAuthStore>()(
                 photo: imageProfile,
               },
             });
-
             console.log('response regis', response);
             if (response?.status === 201) {
               Alert.alert(
@@ -225,8 +223,8 @@ const authStore = create<IAuthStore>()(
           } catch (error) {
             console.error('error', error);
             Alert.alert(
-              'Gagal, status: ' + error?.status,
-              error?.data?.message,
+              'Gagal, status: ' + error?.status ?? 500,
+              error?.data?.message ?? '',
             );
           } finally {
             set({isRegisterLoading: false});

@@ -3,6 +3,7 @@ import {IInformation} from 'store/informationStore';
 
 export type RoutesParam = {
   ChangePassword: undefined;
+  ForgotPassword: undefined;
   Home: undefined;
   History: undefined;
   Information: undefined;
