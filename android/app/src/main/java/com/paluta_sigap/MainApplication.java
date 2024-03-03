@@ -11,6 +11,8 @@ import com.facebook.soloader.SoLoader;
 import java.util.List;
 import androidx.multidex.MultiDexApplication;
 
+import com.microsoft.codepush.react.CodePush;
+
 public class MainApplication extends MultiDexApplication implements ReactApplication {
 
   private final ReactNativeHost mReactNativeHost =
@@ -42,6 +44,11 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
         @Override
         protected Boolean isHermesEnabled() {
           return BuildConfig.IS_HERMES_ENABLED;
+        }
+
+        @Override
+        protected String getJSBundleFile() {
+            return CodePush.getJSBundleFile();
         }
       };
 

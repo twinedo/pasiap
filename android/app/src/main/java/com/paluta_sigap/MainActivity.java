@@ -4,6 +4,10 @@ import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
+import com.microsoft.appcenter.AppCenter;
+import com.microsoft.appcenter.analytics.Analytics;
+import com.microsoft.appcenter.crashes.Crashes;
+
 import android.os.Bundle;
 
 public class MainActivity extends ReactActivity {
@@ -15,6 +19,7 @@ public class MainActivity extends ReactActivity {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    AppCenter.start(getApplication(), "b1188111-fbce-4305-a1f4-ec6afbf70415", Analytics.class, Crashes.class);
     super.onCreate(null);
   }
 
