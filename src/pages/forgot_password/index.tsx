@@ -40,6 +40,9 @@ const ForgotPassword = () => {
     ResetPassword(values.email)
       .then(res => {
         console.log('resss', res);
+        if (res?.success) {
+          Alert.alert('Sukses', 'Silahkan cek email anda');
+        }
       })
       .catch(err => {
         console.error(err);

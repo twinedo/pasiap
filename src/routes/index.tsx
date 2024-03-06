@@ -23,7 +23,7 @@ const Stack = createStackNavigator();
 
 const Routes = () => {
   const {Navigator, Screen} = Stack;
-  const {isLoggedIn, _onCheckExpired, isLoading} = authStore();
+  const {isLoggedIn, _onCheckExpired, isLoading, loginData} = authStore();
   const {_getAllReports} = reportStore();
 
   useEffect(() => {
@@ -40,15 +40,17 @@ const Routes = () => {
         name: 'Background Channel',
         importance: AndroidImportance.HIGH,
       });
-      // Display a notification
-      await notifee.displayNotification({
-        title: remoteMessage?.notification?.title,
-        body: remoteMessage?.notification?.body,
-        android: {
-          channelId,
-          importance: AndroidImportance.HIGH,
-        },
-      });
+      if (loginData?.role === remoteMessage?.data?.role_name) {
+        // Display a notification
+        await notifee.displayNotification({
+          title: remoteMessage?.notification?.title,
+          body: remoteMessage?.notification?.body,
+          android: {
+            channelId,
+            importance: AndroidImportance.HIGH,
+          },
+        });
+      }
       _getAllReports();
     });
 
