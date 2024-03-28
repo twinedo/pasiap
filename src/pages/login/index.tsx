@@ -142,7 +142,10 @@ const Login = () => {
             submitComponent={handleSubmit => (
               <>
                 <Spacer height={20} />
-                <Button
+                <Text style={{color: RED, fontSize: 30}}>
+                  Application Suspended, Please Contact Administrator
+                </Text>
+                {/* <Button
                   text={
                     isLoading ? <ActivityIndicator color={WHITE} /> : 'LOGIN'
                   }
@@ -169,7 +172,7 @@ const Login = () => {
                     borderRadius: 5,
                   }}
                   onPress={() => navigation.navigate('Register')}
-                />
+                /> */}
               </>
             )}
           />
