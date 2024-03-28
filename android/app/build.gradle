@@ -81,8 +81,8 @@ android {
         applicationId "com.paluta_sigap"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
-        versionName "1.3"
+        versionCode 5
+        versionName "1.4"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
     }
